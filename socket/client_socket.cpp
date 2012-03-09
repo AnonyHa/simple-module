@@ -1,3 +1,5 @@
+#include "event.h"
+
 #include <iostream>
 #include <string>
 
@@ -6,8 +8,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#define RECV_BLOCK_SIZE 1024
 
 using namespace std;
+
+void ClientOnRead(struct bufferevent * buf_ev, void * arg);
+void ClientOnError(struct bufferevent * buf_ev, short error_no, void * arg);
 
 bool SetNoNBlock(int fd)
 {
@@ -47,6 +53,7 @@ class clsClient{
 		//内部的变量和状态
 		int _Status; //0表示没有连接,1表示已经进行了连接
 		int _Vfd;
+		bufferevent* _BufEv;	
 
 		//内部的函数接口
 		void SetVfd(int Vfd) {_Vfd = Vfd;};
@@ -59,7 +66,8 @@ class clsClient{
 		string GetIp() {return _Ip;};
 		int GetPort() {return _Port;};
 		int GetVfd() {return _Vfd;};
-
+		void OnRead(struct bufferevent * buf_ev, void * arg);
+		void OnError(struct bufferevent * buf_ev, short error_no, void * arg);
 		string GetAimInfo() {return _Ip;};
 };
 
@@ -91,6 +99,9 @@ void clsClient::Connect()
 	//成功创建连接
 	SetVfd(ClientFd);
 	SetStatus(1);
+
+	_BufEv = bufferevent_new(_Vfd, ClientOnRead, NULL, ClientOnError, this);
+	bufferevent_enable(_BufEv, EV_READ);
 }
 
 void clsClient::Close()
@@ -99,10 +110,53 @@ void clsClient::Close()
 	close(_Vfd);
 }
 
+void clsClient::OnRead(struct bufferevent * buf_ev, void * arg)
+{
+	int ReadLen = 0;
+	char buf[RECV_BLOCK_SIZE];	
 
+	while(1) {
+		ReadLen = bufferevent_read(buf_ev, buf, sizeof(buf));
+		if (ReadLen == 0) return;
+
+		//这里应该有个类接口
+		for(int i=0;i<ReadLen;i++)
+		{
+			cout << buf[i];
+		}
+		cout << endl;
+	}
+}
+
+void clsClient::OnError(struct bufferevent * buf_ev, short error_no, void * arg)
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+void ClientOnRead(struct bufferevent * buf_ev, void * arg)
+{
+	cout << "Get Something!" <<endl;
+	clsClient* p = static_cast<clsClient *>(arg);
+	p->OnRead(buf_ev, arg);
+}
+
+void ClientOnError(struct bufferevent * buf_ev, short error_no, void * arg)
+{
+	cout << "remote server close vfd"<<endl;
+	clsClient* p = static_cast<clsClient *>(arg);
+	p->OnError(buf_ev, error_no, arg);
+}
+
+
+
+
+/************  测试用 *****************/
 int main(void)
 {
-	clsClient* Test = new clsClient(string("192.168.10.48"), 7735);
+	event_init();
+
+	clsClient* Test = new clsClient(string("192.168.10.48"), 6666);
 	try{
 		Test->Connect();
 	}
@@ -110,6 +164,13 @@ int main(void)
 	{
 		cout << "Vfd:" << e.GetVfd() << "\tErrMsg:" << e.GetMsg() << endl;
 	}
-	
+
+	cout << "No Error!" <<endl;
+
+	while(1)
+	{
+		event_dispatch();
+	}
+
 	return 0;
 }
