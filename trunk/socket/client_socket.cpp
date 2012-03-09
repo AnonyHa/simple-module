@@ -1,4 +1,5 @@
 #include "event.h"
+#include "packet.h"
 
 #include <iostream>
 #include <string>
@@ -54,12 +55,13 @@ class clsClient{
 		int _Status; //0表示没有连接,1表示已经进行了连接
 		int _Vfd;
 		bufferevent* _BufEv;	
+		PacketInterface* PacketObj;
 
 		//内部的函数接口
 		void SetVfd(int Vfd) {_Vfd = Vfd;};
 		void SetStatus(int Status) {_Status = Status;};
 	public:
-		clsClient(string Ip, int Port):_Status(0),_Vfd(-1) {_Ip = Ip; _Port = Port;};
+		clsClient(string Ip, int Port):_Status(0),_Vfd(-1),PacketObj(NULL) {_Ip = Ip; _Port = Port;};
 		~clsClient() {if(_Status) close(_Vfd);};
 		void Connect();
 		void Close();
@@ -69,6 +71,7 @@ class clsClient{
 		void OnRead(struct bufferevent * buf_ev, void * arg);
 		void OnError(struct bufferevent * buf_ev, short error_no, void * arg);
 		string GetAimInfo() {return _Ip;};
+		void RegistForPacket(PacketInterface* p){PacketObj = p;};
 };
 
 
@@ -118,13 +121,8 @@ void clsClient::OnRead(struct bufferevent * buf_ev, void * arg)
 	while(1) {
 		ReadLen = bufferevent_read(buf_ev, buf, sizeof(buf));
 		if (ReadLen == 0) return;
-
-		//这里应该有个类接口
-		for(int i=0;i<ReadLen;i++)
-		{
-			cout << buf[i];
-		}
-		cout << endl;
+		
+		if (PacketObj) {PacketObj->PacketOnRead(buf, ReadLen);};
 	}
 }
 
@@ -136,19 +134,15 @@ void clsClient::OnError(struct bufferevent * buf_ev, short error_no, void * arg)
 
 void ClientOnRead(struct bufferevent * buf_ev, void * arg)
 {
-	cout << "Get Something!" <<endl;
 	clsClient* p = static_cast<clsClient *>(arg);
 	p->OnRead(buf_ev, arg);
 }
 
 void ClientOnError(struct bufferevent * buf_ev, short error_no, void * arg)
 {
-	cout << "remote server close vfd"<<endl;
 	clsClient* p = static_cast<clsClient *>(arg);
 	p->OnError(buf_ev, error_no, arg);
 }
-
-
 
 
 /************  测试用 *****************/
@@ -156,7 +150,9 @@ int main(void)
 {
 	event_init();
 
-	clsClient* Test = new clsClient(string("192.168.10.48"), 6666);
+	SimpleOutPacket* PacketTest = new SimpleOutPacket();
+	clsClient* Test = new clsClient(string("127.0.0.1"), 6666);
+	Test->RegistForPacket(PacketTest);
 	try{
 		Test->Connect();
 	}
@@ -164,8 +160,6 @@ int main(void)
 	{
 		cout << "Vfd:" << e.GetVfd() << "\tErrMsg:" << e.GetMsg() << endl;
 	}
-
-	cout << "No Error!" <<endl;
 
 	while(1)
 	{
