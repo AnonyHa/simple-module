@@ -4,7 +4,7 @@ LIBEVENT_LIB=$(LIBEVENT_PATH)/.libs/libevent.a
 
 
 All:
-	g++ -o client_socket.o client_socket.cpp -I $(LIBEVENT_INC)
+	g++ -c client_socket.cpp -I $(LIBEVENT_INC)
 	g++ -o test client_socket.o $(LIBEVENT_LIB)
 clean:
 	rm -rf *.o test
