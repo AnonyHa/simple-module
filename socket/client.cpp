@@ -1,18 +1,22 @@
-#include "client_socket.h"
+#include "socket_manager.h"
 #include "event.h"
 #include "socket_exception.h"
 
 #include <iostream>
 #include <string>
 
+using namespace std;
+SocketManager* Manager;
+
 /************  ²âÊÔÓÃ *****************/
 int main(void)
 {
 	event_init();
 
-	clsClient* Test = new clsClient(string("127.0.0.1"), 6666);
+	Manager = new SocketManager();
+	
 	try{
-		Test->Connect();
+		clsClientSocket* Test = Manager->CreateClientSocket(string("192.168.10.48"), 6666);
 	}
 	catch(SocketError& e)
 	{

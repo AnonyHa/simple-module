@@ -1,4 +1,4 @@
-#include "server_socket.h"
+#include "socket_manager.h"
 #include "socket_exception.h"
 #include "event.h"
 
@@ -7,13 +7,15 @@
 
 using namespace std;
 
+SocketManager* Manager;
+
 int main(void)
 {
 	event_init();
-	clsServerSocket* Server = new clsServerSocket(6666);
+
+	Manager = new SocketManager();
 	try{
-		Server->Start();
-		cout << "Start Server At Port:"<<Server->GetPort()<<endl;
+		clsServerSocket* Server = Manager->CreateServerSocket(6666);
 	}
 	catch(SocketError& e)
 	{

@@ -1,3 +1,4 @@
+#include "socket_manager.h"
 #include "socket_exception.h"
 #include "server_socket.h"
 #include "peer_point.h"
@@ -12,16 +13,9 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
+extern SocketManager* Manager;
 
-bool SetNoNBlock(int fd)
-{
-	int flags;
-	flags = fcntl(fd,F_GETFL);
-	flags |= O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, flags) < 0)	return false;
-	return true;
-}
+using namespace std;
 
 void NewConnect(int listenfd, short event, void * arg) {
 	//这里要作映射关系存储	
@@ -35,8 +29,9 @@ void NewConnect(int listenfd, short event, void * arg) {
 		throw SocketError(listenfd, 7, "Accept Failed,Can not Create Client Vfd");
 		return;
 	}
-	if (!SetNoNBlock(client_fd))
-	{
+
+	int iFlags = fcntl(client_fd, F_GETFL, 0);
+	if (iFlags == -1 || fcntl(client_fd, F_SETFL, iFlags | O_NONBLOCK)) {
 		//如果设置文件描述符失败，则直接关掉相应的vfd
 		close(client_fd);
 		throw SocketError(client_fd, 4, "Set Non Block Failed");
@@ -44,6 +39,7 @@ void NewConnect(int listenfd, short event, void * arg) {
 	}	
 
 	clsPeerPoint* PeerObj = new clsPeerPoint(client_fd);
+	Manager->AddServerVfdList(listenfd, client_fd);
 	cout << "Get A New Connection,Vfd=" << client_fd << endl;
 }
 
