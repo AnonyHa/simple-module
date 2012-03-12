@@ -1,3 +1,4 @@
+#include "socket_manager.h"
 #include "client_socket.h"
 #include "socket_exception.h"
 #include "peer_point.h"
@@ -13,6 +14,7 @@
 #include <arpa/inet.h>
 
 using namespace std;
+extern SocketManager* Manager;
 
 void clsClientSocket::Connect()
 {
@@ -38,6 +40,9 @@ void clsClientSocket::Connect()
 	}
 
 	clsPeerPoint* PeerObj = new clsPeerPoint(ClientFd);
+
+	Manager->AddClientVfdList(ClientFd);	
+	Manager->AddClientPeerVfdList(ClientFd, PeerObj, this);
 }
 
 void clsClientSocket::Close()

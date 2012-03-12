@@ -19,9 +19,10 @@ class SocketManager {
 		clsServerSocket* CreateServerSocket(int Port);		
 		clsClientSocket* CreateClientSocket(string Ip, int Port);
 		bool AddServerVfdList(int ServerVfd, int ClientVfd);
+		bool AddClientVfdList(int ClientVfd);
 		bool AddServerPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, clsServerSocket* ServerObj);
 		bool AddClientPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, clsClientSocket* ClientObj);
+		void ShowInfo();
 };
 
-extern SocketManager* Manager;
 #endif
