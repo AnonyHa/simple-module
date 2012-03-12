@@ -47,13 +47,21 @@ bool SocketManager::AddServerVfdList(int ServerVfd, int ClientVfd)
 	return true;
 }
 
+bool SocketManager::AddClientVfdList(int ClientVfd)
+{
+	ClientList.push_back(ClientVfd);
+}
+
 bool SocketManager::AddServerPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, clsServerSocket* ServerObj)
 {
+	cout << "Just a Server Test;" <<endl;
 	if (!PeerList.count(PeerVfd)) 
 	{
+		cout <<"Insert OK!"<<endl;
 		StructSock * tmp = new StructSock();
 		tmp->InitServerStruct(PeerObj, ServerObj);
 		PeerList[PeerVfd] = tmp;
+		cout << PeerList.size() <<endl;
 		return true;
 	}
 	else
@@ -77,4 +85,44 @@ bool SocketManager::AddClientPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, cls
 		cerr << "PeerVfd="<<PeerVfd<<"has exsit!"<<endl;
 		return false;
 	}
+}
+
+void SocketManager::ShowInfo()
+{
+	cout <<"ServerVfd Info:"<<endl;
+	map< int, vector<int> >::iterator iter = ServerList.begin();
+	map< int, vector<int> >::iterator iter_end = ServerList.end();
+	while(iter != iter_end)
+	{
+		cout << "ServerVfd="<<iter->first << ",";
+		vector<int>::iterator subiter = (iter->second).begin();
+		while(subiter!= (iter->second).end())
+		{
+			cout << "PeerVfdList={"<< *subiter;
+			subiter++;
+		}
+		cout << "}" <<endl;
+		iter++;
+	}
+
+
+	cout <<"ClientVfd Info:"<<endl<<"ClientVfd:";
+	vector<int>::iterator ClientIter = ClientList.begin();
+	while(ClientIter!= ClientList.end())
+	{
+		cout << *ClientIter;
+		ClientIter++;
+	}
+	cout << endl;
+
+	cout <<"PeerVfd Info:"<<endl<<"PeerVfd:";
+	cout << "Map NUmbers:"<<PeerList.size()<<endl;
+
+	map< int, StructSock * >::iterator PeerIter = PeerList.begin();
+	while(PeerIter!=PeerList.end())
+	{
+		cout << PeerIter->first;
+		PeerIter++;
+	}
+
 }

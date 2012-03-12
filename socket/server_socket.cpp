@@ -21,6 +21,7 @@ void NewConnect(int listenfd, short event, void * arg) {
 	//这里要作映射关系存储	
 	struct sockaddr_in client_addr;
 	socklen_t len_addr = sizeof(client_addr);
+	clsServerSocket* ServerSock = (clsServerSocket*)arg;
 	
 	int client_fd;
 	client_fd = accept(listenfd, (struct sockaddr *)&client_addr, &len_addr);
@@ -39,8 +40,11 @@ void NewConnect(int listenfd, short event, void * arg) {
 	}	
 
 	clsPeerPoint* PeerObj = new clsPeerPoint(client_fd);
+
 	Manager->AddServerVfdList(listenfd, client_fd);
+	Manager->AddServerPeerVfdList(client_fd, PeerObj, ServerSock);
 	cout << "Get A New Connection,Vfd=" << client_fd << endl;
+	Manager->ShowInfo();
 }
 
 void clsServerSocket::Start()
