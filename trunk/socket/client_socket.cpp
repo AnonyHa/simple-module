@@ -14,17 +14,7 @@
 
 using namespace std;
 
-bool SetNoNBlock(int fd)
-{
-	int flags;
-	flags = fcntl(fd,F_GETFL);
-	flags |= O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, flags) < 0)	return false;
-	return true;
-}
-
-
-void clsClient::Connect()
+void clsClientSocket::Connect()
 {
 	int ClientFd = socket(AF_INET, SOCK_STREAM, 0);
 	if(ClientFd < 0) {throw SocketError(-1, 2, GetAimInfo() + "Create File Describtion error!");};
@@ -40,8 +30,9 @@ void clsClient::Connect()
 		throw SocketError(ClientFd, 2, GetAimInfo() + " Connect Failed");
 	}
 
-	if (!SetNoNBlock(ClientFd))
-	{
+
+	int iFlags = fcntl(ClientFd, F_GETFL, 0);
+	if (iFlags == -1 || fcntl(ClientFd, F_SETFL, iFlags | O_NONBLOCK)) {
 		close(ClientFd);
 		throw SocketError(ClientFd, 3, GetAimInfo() + "Set NonBlock Failed");
 	}
@@ -49,7 +40,7 @@ void clsClient::Connect()
 	clsPeerPoint* PeerObj = new clsPeerPoint(ClientFd);
 }
 
-void clsClient::Close()
+void clsClientSocket::Close()
 {
 	close(_Vfd);
 }
