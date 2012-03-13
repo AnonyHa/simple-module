@@ -89,16 +89,18 @@ bool SocketManager::AddClientPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, cls
 
 void SocketManager::ShowInfo()
 {
+	int TmpVfd;
 	cout <<"ServerVfd Info:"<<endl;
 	map< int, vector<int> >::iterator iter = ServerList.begin();
 	map< int, vector<int> >::iterator iter_end = ServerList.end();
 	while(iter != iter_end)
 	{
-		cout << "ServerVfd="<<iter->first << ",";
+		cout << "ServerVfd="<<iter->first << ",PeerVfdList={";
 		vector<int>::iterator subiter = (iter->second).begin();
 		while(subiter!= (iter->second).end())
 		{
-			cout << "PeerVfdList={"<< *subiter;
+			cout << *subiter;
+			TmpVfd = *subiter;
 			subiter++;
 		}
 		cout << "}" <<endl;
@@ -114,9 +116,7 @@ void SocketManager::ShowInfo()
 		ClientIter++;
 	}
 	cout << endl;
-
 	cout <<"PeerVfd Info:"<<endl<<"PeerVfd:";
-	cout << "Map NUmbers:"<<PeerList.size()<<endl;
 
 	map< int, StructSock * >::iterator PeerIter = PeerList.begin();
 	while(PeerIter!=PeerList.end())
@@ -124,5 +124,68 @@ void SocketManager::ShowInfo()
 		cout << PeerIter->first;
 		PeerIter++;
 	}
+	cout << endl;
+}
 
+bool SocketManager::DelPeerPointVfd(int PeerVfd)
+{
+	if(!PeerList.count(PeerVfd))	
+	{
+		cerr<< "PeerVfd="<<PeerVfd<<"not exsit!"<<endl;
+		return false;
+	}
+
+	//先对ServerList和ClientList作操作
+	StructSock* p = PeerList[PeerVfd];
+	if(p->GetVfdType() == 1)
+	{
+		int ServerVfd = p->GetServerSocket()->GetServerVfd();
+		DelServerPeerVfd(ServerVfd, PeerVfd);
+	}
+	else if(p->GetVfdType() == 2)
+	{
+		DelClientVfd(PeerVfd);
+	}
+	else
+	{
+		cerr<<"PeerVfd="<<PeerVfd<<",Socket Vfd Type="<<p->GetVfdType()<<endl;
+		return false;
+	}	
+
+	//针对PeerVfd作操作
+	PeerList.erase(PeerVfd);
+	delete p;	
+
+	return true;
+}
+
+bool SocketManager::DelServerPeerVfd(int ServerVfd, int PeerVfd)
+{
+	if (!ServerList.count(ServerVfd)) return false;
+	vector<int>::iterator iter = ServerList[ServerVfd].begin();
+	while(iter!=ServerList[ServerVfd].end())
+	{
+		if (*iter == PeerVfd) 
+		{
+			ServerList[ServerVfd].erase(iter);
+			break;
+		}	
+		iter++;
+	}
+	return true;
+}
+
+bool SocketManager::DelClientVfd(int ClientVfd)
+{
+	vector<int>::iterator iter = ClientList.begin();	
+	while(iter!=ClientList.end())
+	{
+		if (*iter == ClientVfd)
+		{
+			ClientList.erase(iter);
+			break;
+		}
+		iter++;
+	}
+	return true;
 }

@@ -26,6 +26,9 @@ class StructSock{
 			_SocketVfdType = 2;
 			return true;
 		};
+		int GetVfdType() {return _SocketVfdType;};
+		clsServerSocket* GetServerSocket(){return _ServerSock;};
+		clsClientSocket* GetClientSocket(){return _ClientSock;};
 };
 
 #endif
