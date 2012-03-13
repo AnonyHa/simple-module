@@ -1,9 +1,11 @@
 #include "peer_point.h"
 #include "socket_exception.h"
+#include "socket_manager.h"
 
 #include <iostream>
 
 using namespace std;
+extern SocketManager* Manager;
 
 void PeerOnRead(struct bufferevent * buf_ev, void * arg)
 {
@@ -55,5 +57,7 @@ void clsPeerPoint::OnError(struct bufferevent* buf_ev, short error_no, void* arg
 {
 	if (_Status == 0) return;
 	_Status = 0;
+	Manager->DelPeerPointVfd(_Vfd);
 	close(_Vfd);
+	Manager->ShowInfo();
 }
