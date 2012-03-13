@@ -1,6 +1,7 @@
 #include "socket_manager.h"
 #include "event.h"
 #include "socket_exception.h"
+#include "simple_packet_func.h"
 
 #include <iostream>
 #include <string>
@@ -16,7 +17,8 @@ int main(void)
 	Manager = new SocketManager();
 	
 	try{
-		clsClientSocket* Test = Manager->CreateClientSocket(string("192.168.10.48"), 6666);
+		SimplePacketFunc* SimpleFunc = new SimplePacketFunc();
+		clsClientSocket* Test = Manager->CreateClientSocket(string("192.168.10.48"), 6666, SimpleFunc);
 	}
 	catch(SocketError& e)
 	{

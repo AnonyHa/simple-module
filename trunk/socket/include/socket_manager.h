@@ -6,6 +6,8 @@
 #include "client_socket.h"
 #include "peer_point.h"
 #include "struct_sock.h"
+#include "packet_interface.h"
+
 #include <map>
 #include <vector>
 
@@ -18,8 +20,8 @@ class SocketManager {
 		bool DelServerPeerVfd(int ServerVfd, int PeerVfd);//只是删除相应的PeerVfd
 		bool DelClientVfd(int ClientVfd);
 	public:
-		clsServerSocket* CreateServerSocket(int Port);		
-		clsClientSocket* CreateClientSocket(string Ip, int Port);
+		clsServerSocket* CreateServerSocket(int Port, PacketInterface* PacketClass = 0);		
+		clsClientSocket* CreateClientSocket(string Ip, int Port, PacketInterface* PacketClass = 0);
 		bool AddServerVfdList(int ServerVfd, int ClientVfd);
 		bool AddClientVfdList(int ClientVfd);
 		bool AddServerPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, clsServerSocket* ServerObj);

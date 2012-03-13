@@ -43,8 +43,11 @@ void NewConnect(int listenfd, short event, void * arg) {
 
 	Manager->AddServerVfdList(listenfd, client_fd);
 	Manager->AddServerPeerVfdList(client_fd, PeerObj, ServerSock);
+
 	cout << "Get A New Connection,Vfd=" << client_fd << endl;
 	Manager->ShowInfo();
+	char* TmpBuf="abcd";
+	Manager->PeerVfdOnWrite(client_fd, TmpBuf, sizeof(TmpBuf));
 }
 
 void clsServerSocket::Start()

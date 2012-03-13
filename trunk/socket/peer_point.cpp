@@ -48,11 +48,6 @@ void clsPeerPoint::OnRead(struct bufferevent* buf_ev, void* arg)
 
 }
 
-bool clsPeerPoint::OnWrite()
-{
-	return true;
-}
-
 void clsPeerPoint::OnError(struct bufferevent* buf_ev, short error_no, void* arg)
 {
 	if (_Status == 0) return;
