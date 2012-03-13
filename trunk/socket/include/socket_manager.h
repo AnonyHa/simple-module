@@ -26,6 +26,8 @@ class SocketManager {
 		bool AddClientPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, clsClientSocket* ClientObj);
 		void ShowInfo();
 		bool DelPeerPointVfd(int PeerVfd);
+		bool PeerVfdOnRead(int PeerVfd, char* Buf, int BufLen);
+		bool PeerVfdOnWrite(int ToVfd, char* Buf, int BufLen);
 };
 
 #endif

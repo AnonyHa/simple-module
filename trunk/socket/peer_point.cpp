@@ -42,8 +42,8 @@ void clsPeerPoint::OnRead(struct bufferevent* buf_ev, void* arg)
 		ReadLen = bufferevent_read(buf_ev, buf, sizeof(buf));
 		if (ReadLen == 0) return;
 		
-		for(int i=0;i<ReadLen;i++)
-			cout<<buf[i];
+		//调用上层的收包函数
+		Manager->PeerVfdOnRead(_Vfd, buf, ReadLen);
 	}
 
 }

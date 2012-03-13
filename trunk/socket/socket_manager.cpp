@@ -99,7 +99,7 @@ void SocketManager::ShowInfo()
 		vector<int>::iterator subiter = (iter->second).begin();
 		while(subiter!= (iter->second).end())
 		{
-			cout << *subiter;
+			cout << *subiter<<",";
 			TmpVfd = *subiter;
 			subiter++;
 		}
@@ -121,7 +121,7 @@ void SocketManager::ShowInfo()
 	map< int, StructSock * >::iterator PeerIter = PeerList.begin();
 	while(PeerIter!=PeerList.end())
 	{
-		cout << PeerIter->first;
+		cout << PeerIter->first<<",";
 		PeerIter++;
 	}
 	cout << endl;
@@ -188,4 +188,30 @@ bool SocketManager::DelClientVfd(int ClientVfd)
 		iter++;
 	}
 	return true;
+}
+
+bool SocketManager::PeerVfdOnRead(int PeerVfd, char* Buf, int BufLen)
+{
+	if (!PeerList[PeerVfd]) return false;
+	StructSock * p = PeerList[PeerVfd];	
+	if(p->GetVfdType() == 1)
+	{
+		clsServerSocket* ServerSock = p->GetServerSocket();
+		if (ServerSock->GetPacketInterface())	
+		{
+			return ServerSock->GetPacketInterface()->PacketOnRead(PeerVfd, Buf, BufLen);
+		}
+	}
+	else if(p->GetVfdType() == 2)
+	{
+		clsClientSocket* ClientSock = p->GetClientSocket();
+		if (ClientSock->GetPacketInterface())
+		{
+			return ClientSock->GetPacketInterface()->PacketOnRead(PeerVfd, Buf, BufLen);
+		}
+	}
+}
+
+bool SocketManager::PeerVfdOnWrite(int ToVfd, char* Buf, int BufLen)
+{
 }
