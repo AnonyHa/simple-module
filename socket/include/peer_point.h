@@ -13,7 +13,6 @@ class clsPeerPoint{
 		clsPeerPoint(int Vfd);
 		~clsPeerPoint();
 		void OnRead(struct bufferevent * buf_ev, void * arg);
-		bool OnWrite();
 		void OnError(struct bufferevent * buf_ev, short error_no, void * arg);
 };
 

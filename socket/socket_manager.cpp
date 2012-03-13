@@ -4,9 +4,9 @@
 #include <iostream>
 #include <string>
 
-clsServerSocket* SocketManager::CreateServerSocket(int Port)
+clsServerSocket* SocketManager::CreateServerSocket(int Port, PacketInterface* PacketClass)
 {
-	clsServerSocket* ServerSock = new clsServerSocket(Port);
+	clsServerSocket* ServerSock = new clsServerSocket(Port, PacketClass);
 	try{
 		ServerSock->Start();
 	}
@@ -22,9 +22,9 @@ clsServerSocket* SocketManager::CreateServerSocket(int Port)
 	return ServerSock;
 }
 
-clsClientSocket* SocketManager::CreateClientSocket(string Ip, int Port)
+clsClientSocket* SocketManager::CreateClientSocket(string Ip, int Port, PacketInterface* PacketClass)
 {
-	clsClientSocket* ClientSock = new clsClientSocket(Ip, Port);
+	clsClientSocket* ClientSock = new clsClientSocket(Ip, Port, PacketClass);
 	try{
 		ClientSock->Connect();
 	}
@@ -214,4 +214,7 @@ bool SocketManager::PeerVfdOnRead(int PeerVfd, char* Buf, int BufLen)
 
 bool SocketManager::PeerVfdOnWrite(int ToVfd, char* Buf, int BufLen)
 {
+	if(!PeerList[ToVfd]) return false;
+	write(ToVfd, Buf, BufLen);
+	return true;
 }
