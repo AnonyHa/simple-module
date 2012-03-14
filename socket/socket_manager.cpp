@@ -124,7 +124,7 @@ void SocketManager::ShowInfo()
 	cout << endl;
 }
 
-bool SocketManager::DelPeerPointVfd(int PeerVfd)
+bool SocketManager::PeerVfdOnClose(int PeerVfd)
 {
 	if(!PeerList.count(PeerVfd))	
 	{
