@@ -11,8 +11,9 @@ All:
 	g++ -c server.cpp -I $(LIBEVENT_INC) -I $(INC_PATH)
 	g++ -c socket_manager.cpp -I $(LIBEVENT_INC) -I $(INC_PATH)
 	g++ -c client_socket.cpp -I $(LIBEVENT_INC) -I $(INC_PATH)
-	g++ -o server socket_manager.o client_socket.o server.o server_socket.o peer_point.o $(LIBEVENT_LIB)
+	g++ -c packet_interface.cpp -I $(LIBEVENT_INC) -I $(INC_PATH)
+	g++ -o server socket_manager.o client_socket.o server.o server_socket.o peer_point.o packet_interface.o $(LIBEVENT_LIB)
 	g++ -c client.cpp -I $(LIBEVENT_INC) -I $(INC_PATH)
-	g++ -o client socket_manager.o server_socket.o client.o client_socket.o peer_point.o $(LIBEVENT_LIB)
+	g++ -o client socket_manager.o server_socket.o client.o client_socket.o peer_point.o packet_interface.o $(LIBEVENT_LIB)
 clean:
 	rm -rf *.o server client
