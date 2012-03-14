@@ -1,23 +1,9 @@
-#include <stdlib.h>
-#include <alloc.h>
-#include <string.h>
-#include <stdio.h>
+#include "mybuf.h"
 
-class MyBuf {
-	private:
-		int _BufSize;
-		char* _Buf;
-		char* _Head;
-		char* _Tail;
-		int GetBufLen() {return _Head-_Tail;};
-		int GetRemainLen() {return _BufSize - GetBufLen();};
-		int GetTailLen() {return _Buf+_BufSize-_Tail;};
-	public:
-		MyBuf(int BufSize=1024);
-		~MyBuf();
-		void InsertData(char* Input, int InputLen, int& RealLen);
-		char* GetBufData(int DataLen, int& RealLen);
-};
+#include <cstdlib>
+#include <cstring>
+
+using namespace std;
 
 MyBuf::MyBuf(int BufSize)
 {
@@ -62,7 +48,11 @@ void MyBuf::InsertData(char* Input, int InputLen, int& RealLen)
 		_Tail = _Head + BufLen;
 	}
 
-	if (RealLen != 0) memcpy(_Tail, Input, RealLen);		
+	if (RealLen != 0) 
+	{
+		memcpy(_Tail, Input, RealLen);
+		_Tail = _Tail + RealLen;
+	}	
 }
 
 char* MyBuf::GetBufData(int DataLen, int& RealLen)
@@ -73,25 +63,9 @@ char* MyBuf::GetBufData(int DataLen, int& RealLen)
 	return DataHead;
 }
 
-/////////////////////////////////////////////
-#include <string>
-#include <iostream>
-
-using namespace std;
-
-int main()
+char* MyBuf::GetBufHead(int& BufLen)
 {
-	MyBuf * Test = new MyBuf(2);
-	string Buf("abcefg");
-	int RealLen;
-	Test->InsertData((char *)Buf.c_str(), (int)Buf.size() - 2, RealLen);
-
-	cout <<"Get Data Len 3:"<<endl;
-	int ReadLen;
-	char* Output = Test->GetBufData(3,ReadLen);
-	for (int i=0;i<3;i++)
-		cout << Output[i];
-	cout << "\tGet ReadLen:"<<ReadLen<<endl;
-
-	return 0;
+	BufLen = GetBufLen();
+	return _Head;
 }
+
