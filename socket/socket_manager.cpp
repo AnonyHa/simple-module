@@ -54,14 +54,11 @@ bool SocketManager::AddClientVfdList(int ClientVfd)
 
 bool SocketManager::AddServerPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, clsServerSocket* ServerObj)
 {
-	cout << "Just a Server Test;" <<endl;
 	if (!PeerList.count(PeerVfd)) 
 	{
-		cout <<"Insert OK!"<<endl;
 		StructSock * tmp = new StructSock();
 		tmp->InitServerStruct(PeerObj, ServerObj);
 		PeerList[PeerVfd] = tmp;
-		cout << PeerList.size() <<endl;
 		return true;
 	}
 	else
@@ -217,4 +214,26 @@ bool SocketManager::PeerVfdOnWrite(int ToVfd, char* Buf, int BufLen)
 	if(!PeerList[ToVfd]) return false;
 	write(ToVfd, Buf, BufLen);
 	return true;
+}
+
+bool SocketManager::PeerVfdOnConnect(int Vfd)
+{
+	if(!PeerList[Vfd]) return false;
+	StructSock * p = PeerList[Vfd];	
+	if(p->GetVfdType() == 1)
+	{
+		clsServerSocket* ServerSock = p->GetServerSocket();
+		if (ServerSock->GetPacketInterface())	
+		{
+			return ServerSock->GetPacketInterface()->PacketOnConnect(Vfd);
+		}
+	}
+	else if(p->GetVfdType() == 2)
+	{
+		clsClientSocket* ClientSock = p->GetClientSocket();
+		if (ClientSock->GetPacketInterface())
+		{
+			return ClientSock->GetPacketInterface()->PacketOnConnect(Vfd);
+		}
+	}
 }

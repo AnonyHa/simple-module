@@ -30,6 +30,7 @@ class SocketManager {
 		bool DelPeerPointVfd(int PeerVfd);
 		bool PeerVfdOnRead(int PeerVfd, char* Buf, int BufLen);
 		bool PeerVfdOnWrite(int ToVfd, char* Buf, int BufLen);
+		bool PeerVfdOnConnect(int Vfd);
 };
 
 #endif
