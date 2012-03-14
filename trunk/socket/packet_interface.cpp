@@ -3,7 +3,7 @@
 
 extern SocketManager* Manager;
 
-bool PacketOnWrite(int ToVfd, char* Buf, int BufLen)
+bool PacketInterface::PacketOnWrite(int ToVfd, char* Buf, int BufLen)
 {
 	return Manager->PeerVfdOnWrite(ToVfd, Buf, BufLen);
 }

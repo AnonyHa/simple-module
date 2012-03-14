@@ -1,7 +1,7 @@
 #include "socket_manager.h"
 #include "event.h"
 #include "socket_exception.h"
-#include "simple_packet_func.h"
+#include "simple_client_func.h"
 
 #include <iostream>
 #include <string>

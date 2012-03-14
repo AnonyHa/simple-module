@@ -43,6 +43,7 @@ void clsClientSocket::Connect()
 
 	Manager->AddClientVfdList(ClientFd);	
 	Manager->AddClientPeerVfdList(ClientFd, PeerObj, this);
+	Manager->PeerVfdOnConnect(ClientFd);
 }
 
 void clsClientSocket::Close()
