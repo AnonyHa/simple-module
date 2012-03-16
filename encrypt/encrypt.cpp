@@ -1,60 +1,63 @@
+#include <cstdlib>
+#include <cstring>
+
 class clsEncrypt {
 	public:
-		virtual unsigned char* Encrypt(unsigned char* Input,int InputLen,int& OutputLen)=0;
-		virtual unsigned char* Decrypt(unsigned char* Input,int InputLen,int& OutputLen)=0;
+		virtual char* Encrypt(char* Input,int InputLen,int& OutputLen)=0;
+		virtual char* Decrypt(char* Input,int InputLen,int& OutputLen)=0;
 };
 
 #define DIC_SIZE 256
-class SimpleXOR public:clsEncrypt{
+class SimpleXOR:public clsEncrypt{
 	private:
 		unsigned char dic_i;
 		unsigned char* dic;
 		bool SeedFlag;
+		int _Seed;
+
+	    unsigned char xmake(unsigned char c) {
+			++dic_i;
+			return dic[dic_i]^c;
+		}
 	public:
-		SimpleXOR() {dic = new unsigned char[DIC_SIZE];SeedFlag=false;};
+		SimpleXOR() {dic = new unsigned char[DIC_SIZE];SeedFlag=false;memset(dic, 0, DIC_SIZE);};
 		~SimpleXOR() {delete dic;};
+
 		void SetSeed(int Seed)
 		{
+			_Seed = Seed;
 			dic_i = 0;
 			for (int i=0; i<256; ++i) {
 				dic[i] = (unsigned char)(Seed%256);
-				dic[i] ^= dic[i] ^ (unsigned char)Seed;
 				Seed = (Seed<<3)+(Seed>>3)+Seed;
 			} 
 
 			SeedFlag = true;
 		}
 
-   		void exchange(unsigned char c1, unsigned char c2)
+		int GetSeed()
 		{
-			unsigned char tmp = dic[c1];
-			dic[c1] = dic[c2];
-			dic[c1] = tmp;
+			return _Seed;
 		}
 
-	    unsigned char xmake(unsigned char c) {
-			++dic_i;
-			exchange(dic_i, c);
-			return dic[dic_i]^c;
-		}
 	
-		unsigned char* Encrypt(unsigned char* Input, int InputLen, int& OutputLen)
+		char* Encrypt(char* Input, int InputLen, int& OutputLen)
 		{
 			if (!SeedFlag) {
 				OutputLen = 0;
-				return NULL;
+				return 0;
 			}
 
-			unsigned char* Output = new unsigned char[InputLen];
+			char* Output = new char[InputLen];
 			OutputLen = InputLen;
 			for(int i=0; i<InputLen; i++)
 			{
-				Output[i] = xmake(Input[i]);
+				Output[i] = (char)xmake((unsigned char)Input[i]);
 			}
 			return Output;
 		}
 
-		unsigned char* Decrypt(unsigned char* Input,int InputLen,int& OutputLen)
+		char* Decrypt(char* Input,int InputLen,int& OutputLen)
 		{
 			int StartLen = 0;
 			if (!SeedFlag)
@@ -63,7 +66,7 @@ class SimpleXOR public:clsEncrypt{
 				{
 					//³ö´í
 					OutputLen = 0;
-					return NULL;
+					return 0;
 				}
 				else
 				{
@@ -74,13 +77,19 @@ class SimpleXOR public:clsEncrypt{
 			}
 
 			OutputLen = InputLen - StartLen;
-			unsigned char* Output = new unsigned char[OutputLen];
+			char* Output = new char[OutputLen];
 
 			for (int i=StartLen;i<InputLen;i++)
 			{
-				Output[i-StartLen] = xmake(Input[i]);	
+				Output[i-StartLen] = (char)xmake((unsigned char)Input[i]);	
 			}
 
 			return Output;
 		}
+
+		unsigned char* GetDic()
+		{
+			return dic;
+		}
 };
+
