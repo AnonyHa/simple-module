@@ -7,6 +7,8 @@ class clsEncrypt {
 		virtual char* Decrypt(char* Input,int InputLen,int& OutputLen)=0;
 };
 
+
+////////////////////////////////////////////
 #define DIC_SIZE 256
 class SimpleXOR:public clsEncrypt{
 	private:
@@ -43,16 +45,31 @@ class SimpleXOR:public clsEncrypt{
 	
 		char* Encrypt(char* Input, int InputLen, int& OutputLen)
 		{
-			if (!SeedFlag) {
-				OutputLen = 0;
-				return 0;
+			int SeedOffset = 0;
+			char* Output;
+			if (!SeedFlag) 
+			{
+				//如果没有，则把种子放在前几位，然后取后续内容
+				int SeedLen = sizeof(int);
+				int RandomSeed = random();
+				OutputLen = InputLen + SeedLen;
+				SetSeed(RandomSeed);
+
+				Output = new char[OutputLen];
+				//放种子到SocketStream	
+				memcpy(Output, &RandomSeed, SeedLen);
+				SeedOffset = SeedLen;
+			}
+			else
+			{
+				OutputLen = InputLen;
+				Output = new char[OutputLen];	
 			}
 
-			char* Output = new char[InputLen];
-			OutputLen = InputLen;
+
 			for(int i=0; i<InputLen; i++)
 			{
-				Output[i] = (char)xmake((unsigned char)Input[i]);
+				Output[i+SeedOffset] = (char)xmake((unsigned char)Input[i]);
 			}
 			return Output;
 		}
