@@ -7,7 +7,6 @@ class MyBuf {
 		char* _Buf;
 		char* _Head;
 		char* _Tail;
-		int GetBufLen() {return _Tail-_Head;};
 		int GetRemainLen() {return _BufSize - GetBufLen();};
 		int GetTailLen() {return _Buf+_BufSize-_Tail;};
 	public:
@@ -16,6 +15,7 @@ class MyBuf {
 		void InsertData(char* Input, int InputLen, int& RealLen);
 		char* GetBufData(int DataLen, int& RealLen);
 		char* GetBufHead(int& BufLen);
+		int GetBufLen() {return _Tail-_Head;};
 };
 
 #endif
