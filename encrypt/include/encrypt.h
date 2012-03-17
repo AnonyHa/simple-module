@@ -1,3 +1,6 @@
+#ifndef __ENCRYPT_H__
+#define __ENCRYPT_H__
+
 #include <cstdlib>
 #include <cstring>
 
@@ -110,3 +113,4 @@ class SimpleXOR:public clsEncrypt{
 		}
 };
 
+#endif

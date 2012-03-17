@@ -1,15 +1,20 @@
 #include "packet_process.h"
+#include "encrypt.h"
 #include <stdio.h>
 
 int main()
 {
-	clsPacketEncrypt* EncryptObj = new clsPacketEncrypt();	
-	clsPacketDecrypt* DecryptObj = new clsPacketDecrypt();
+	SimpleXOR* encrypt = new SimpleXOR();
+	SimpleXOR* decrypt = new SimpleXOR();
 
-	char* Input="abcdef";
+	clsPacketEncrypt* EncryptObj = new clsPacketEncrypt(encrypt);	
+	clsPacketDecrypt* DecryptObj = new clsPacketDecrypt(decrypt);
+
+	const char* Input="abcdef";
 	char* Output;
 	int OutLen;
-	Output = EncryptObj->EncryptPacket(Input, 4, OutLen);
-	//printf("out Address %x\n", Output);
-	//DecryptObj->DecryptPacket(Output, OutLen);
+	Output = EncryptObj->EncryptPacket((char *)Input, 6, OutLen);
+	printf("Encrypt OutLen:%d\n", OutLen);
+	DecryptObj->DecryptPacket(Output, OutLen);
+	printf("Decrypt OutLen:%d\n", OutLen);
 }
