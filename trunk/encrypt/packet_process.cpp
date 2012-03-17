@@ -14,28 +14,17 @@ char* clsPacketEncrypt::EncryptPacket(char* Buf, int BufLen, int& RealLen)
 {
 	int BagLen = sizeof(int);
 	unsigned char* tmp = new unsigned char[BagLen+BufLen];
-	memcpy(&tmp, &BufLen, BagLen);
-	memcpy(&tmp+BagLen, Buf, BufLen);	
-
-	printf("hereh?");
-	for (int i=0;i<BagLen+BufLen;i++)
-		printf("%02x ", tmp[i]);
-	printf("\n");
-	printf("hereh?");
-
-
+	memcpy(tmp, &BufLen, BagLen);
+	memcpy(tmp+BagLen, Buf, BufLen);	
 
 	//执行加密函数
 	int OutLen;
 	char* OutBuf;
-	/*
 	if(_EncryptClass) 
 	{
-		printf("what???\n");
 		OutBuf = _EncryptClass->Encrypt((char*)tmp, BagLen+BufLen, OutLen);
 	}
 	else
-	*/
 	{
 		OutBuf = (char *)tmp;
 		OutLen = BagLen + BufLen;
@@ -43,9 +32,10 @@ char* clsPacketEncrypt::EncryptPacket(char* Buf, int BufLen, int& RealLen)
 
 	RealLen = OutLen;
 
-	printf("Buf Error!\n");
+	/*
 	for (int i=0;i<OutLen;i++)
 		printf("%02x ", OutBuf[i]);
+	*/
 
 	//调用数据直接写
 	return OutBuf;
@@ -71,11 +61,9 @@ void clsPacketDecrypt::DecryptPacket(char* Buf,int BufLen)
 	char* DecryptBuf;
 	int RealLen = 0;
 
-	/*
 	if(_EncryptClass)
 		DecryptBuf = _EncryptClass->Decrypt(Buf, BufLen, DecLen);		
 	else
-	*/
 	{
 		DecryptBuf = Buf;
 		DecLen = BufLen;	
@@ -110,9 +98,10 @@ void clsPacketDecrypt::BagProcess()
 			int RealLen;	
 			char* BagBuf = _DecryptBuf->GetBufData(_BagLen, RealLen);
 			//调用包处理接口
-			printf("Get A Bag:\n");
+			printf("Get A Bag,RealLen=%d\n", RealLen);
 			for(int i=0;i<RealLen;i++)
 				printf("%c", BagBuf[i]);
+			printf("\n");
 
 			_BagFlag = false;
 		}
