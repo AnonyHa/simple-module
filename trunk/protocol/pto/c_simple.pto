@@ -1,0 +1,7 @@
+return
+{
+	arg_list = {
+		{"id", "number"},
+		{"name", "string"},
+	}
+}
