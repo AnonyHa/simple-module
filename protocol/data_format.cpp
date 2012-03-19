@@ -1,10 +1,9 @@
 
 // $Id: data_format.cpp 83932 2009-06-02 03:11:31Z mcj $
 #include "data_format.h"
-#include "stdio.h"
-#include "lbacktrace.h"
+//#include "stdio.h"
 #include "string.h"
-#include "log.h"
+//#include "log.h"
 /*
 void dump_error (lua_State *L, const char *fmt, ...)
 {
@@ -98,7 +97,7 @@ int fcall_number_arg::unpack(lua_State*L, const byte* buf, int buf_len)
 	check_buf(readed_len, buf_len);
 	memcpy(&data_t, buf, sizeof(data_t));
 	if ((data_t.len <= 0) || (data_t.len >= 5)) {
-		Log(DefaultLogFile, "engine", ERR, "[unpack error]: invalid number data");
+		//Log(DefaultLogFile, "engine", ERR, "[unpack error]: invalid number data");
 		return 0;
 	}
 
@@ -229,7 +228,7 @@ int fcall_string_arg::unpack(lua_State*L, const byte* buf, int buf_len)
 		memcpy(&str_id, buf+1, 2);
 		int str_len = str_id - 1;
 		if (str_len < 0 ) {//zero len is ok.
-			Log(DefaultLogFile, "engine", ERR, "unpack string length error:str_len=%d", str_len);
+			//Log(DefaultLogFile, "engine", ERR, "unpack string length error:str_len=%d", str_len);
 			return 0;
 		}
 		readed_len += str_len;
@@ -275,7 +274,7 @@ int fcall_table_arg::_read_format(lua_State*L)
 			lua_settop(L, top);
 			return PROTO_ERROR;
 		}
-		int status = lua_btcall(L, 0, 2, 0);
+		int status = lua_pcall(L, 0, 2, 0);
 		if (status) {
 			lua_settop(L, top);
 			return PROTO_ERROR;

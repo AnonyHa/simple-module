@@ -1,17 +1,20 @@
 // $Id: protocol.cpp 91636 2009-08-19 08:34:12Z lfwu $
-#include "gamer.h"
-#include "log.h"
+//#include "gamer.h"
+//#include "log.h"
 #include "protocol.h"
 
 //#include "mbuf.h"
-#include "lbacktrace.h"
-#include "macros.h"
+//#include "lbacktrace.h"
+//#include "macros.h"
 
 #include <string>
+#include <cstring>
+#include <cstdlib>
 
+typedef unsigned char byte;
+#define MAXTONETD 0x8000
 
-#include <string.h>
-#include <stdlib.h>
+extern int HookSend (const byte *buf,  int len, unsigned int fd,int ismulticast = 0, int mcpayloadlen = 0);
 
 //////////////////////////////////////////////////////////////////////////
 // hash字符串，用于协议校验
@@ -32,8 +35,6 @@ static const  std::string server = "server";
 // 定义网络协议描述信息中的关键字
 static const char func_name[] = "func_name";
 static const char arg_list[] = "arg_list";
-//static const  char for_caller[] = "gamer_for_caller";
-//static const  char for_maker[] = "gamer_for_maker";
 
 size_t net_protocol::_total_pack_count = 0 ;
 size_t net_protocol::_total_unpack_count = 0 ;
@@ -70,7 +71,8 @@ int net_protocol::load(lua_State *L)
 	int len = read_file(file, read_buf, buf_len);
 	if (len== 0) {
 		//raise_error(L, "[proto error]: fail to read proto_desc file=%s\n!", file);
-		Log(DefaultLogFile, "engine", ERR, "read file %s error!", file);
+		//Log(DefaultLogFile, "engine", ERR, "read file %s error!", file);
+		printf("read file %s error!\n", file);
 		return PROTO_ERROR;
 	}
 	int status = luaL_loadbuffer(L, read_buf, len, 0);
@@ -80,9 +82,10 @@ int net_protocol::load(lua_State *L)
 			lua_settop(L, top);
 			return PROTO_ERROR;
 		}
-		int status = lua_btcall(L, 0, 1, 0);
+		int status = lua_pcall(L, 0, 1, 0);
 		if (status) {
-			Log(DefaultLogFile, "engine", ERR, "lua call error!");
+			//Log(DefaultLogFile, "engine", ERR, "lua call error!");
+			printf("lua call error!\n");
 			lua_settop(L, top);
 			return PROTO_ERROR;
 		}
@@ -129,7 +132,7 @@ int net_protocol::convert_protocol(lua_State*L)
 	int top = lua_gettop(L);
 	// 栈顶必须为协议文件加载后返回的table
 	if (!lua_istable(L, -1)) {
-		Log(DefaultLogFile, "engine", ERR, "top is not table");
+		//Log(DefaultLogFile, "engine", ERR, "top is not table");
 		return PROTO_ERROR;
 	}
 	// 解析函数名称
@@ -137,21 +140,21 @@ int net_protocol::convert_protocol(lua_State*L)
 	lua_rawget(L, -2);
 	if (lua_isstring(L, -1)) {
 		_pack_func_name = lua_tostring(L, -1);
-		Log(DefaultLogFile, "engine", ERR, "syn proto funcname ok!");
+		//Log(DefaultLogFile, "engine", ERR, "syn proto funcname ok!");
 	}
 	lua_pop(L, 1);
 
 	// 解析协议类型
 	int rel = func_proc(L);
 	if (rel != PROTO_OK) {
-		Log(DefaultLogFile, "engine", ERR, "syn proto type error!");
+		//Log(DefaultLogFile, "engine", ERR, "syn proto type error!");
 		lua_settop(L, top);
 		return rel;
 	}
 	// 解析参数列表
 	rel = arglist_proc(L);
 	if (rel != PROTO_OK) {
-		Log(DefaultLogFile, "engine", ERR, "syn proto arg error!");
+		//Log(DefaultLogFile, "engine", ERR, "syn proto arg error!");
 		lua_settop(L, top);
 		return rel;
 	}
@@ -176,7 +179,7 @@ int net_protocol::func_proc(lua_State* L)
 		lua_pushstring(L, _pack_func_name.c_str());
 		lua_rawget(L, -2);
 		if (!lua_isfunction(L, -1)) {
-			Log(DefaultLogFile, "engine", WAR, "[proto warnning]: can't find far_func funcname=%s!", _pack_func_name.c_str());
+			//Log(DefaultLogFile, "engine", WAR, "[proto warnning]: can't find far_func funcname=%s!", _pack_func_name.c_str());
 			goto use_tmpfunc;
 		}
 		
@@ -193,16 +196,16 @@ int net_protocol::func_proc(lua_State* L)
 		use_tmpfunc:
 		lua_getglobal(L, "construc_default_rpcfunc");
 		if (!lua_isfunction(L, -1)) {
-			Log(DefaultLogFile, "engine", ERR, "[proto error]: can't find construc_default_rpcfunc!");
+			//Log(DefaultLogFile, "engine", ERR, "[proto error]: can't find construc_default_rpcfunc!");
 		}
 		else {
 			lua_pushstring(L, _pack_func_name.c_str());
-			lua_btcall(L, 1, 1, 0);
+			lua_pcall(L, 1, 1, 0);
 			if (_unpack_ref != LUA_NOREF) {
 				lua_unref(L, _unpack_ref);
 			}
 			assert(lua_isfunction(L, -1));
-			Log(DefaultLogFile, "engine", WAR, "[proto warnning]: %s bind to default_rpc_func!", _pack_func_name.c_str());
+			//Log(DefaultLogFile, "engine", WAR, "[proto warnning]: %s bind to default_rpc_func!", _pack_func_name.c_str());
 			_unpack_ref = lua_ref(L, true);
 			assert(_unpack_ref != LUA_NOREF);
 			lua_settop(L, top);
@@ -360,7 +363,6 @@ int net_protocol::pack(lua_State* L)
 			goto outway ;
 		}
 		// 获取缓存
-		//byte * buf = (byte*)MbufAllocPack(OutSockBuf, MAXTONETD) ;
 		if (buf == NULL) {
 			goto outway ;
 		}
@@ -369,7 +371,7 @@ int net_protocol::pack(lua_State* L)
 			ProtoManager->GetSendHookFunc()(buf, used_len, ext, 0, 0);
 		} 
 		else {
-				Log(DefaultLogFile, "engine", ERR, "gamer pack data error,id=%d,name=%s", self->get_id(), (self->_pack_func_name).c_str());
+				//Log(DefaultLogFile, "engine", ERR, "gamer pack data error,id=%d,name=%s", self->get_id(), (self->_pack_func_name).c_str());
 		}
 	} else if (type == LUA_TTABLE) {
 		//byte data[MAXTONETD] ;为了减少一次memcpy，决定直接从OutSockBuf里直接分配一块大的内存
@@ -403,7 +405,7 @@ int net_protocol::pack(lua_State* L)
 				if (c > 0) {
 					size_t total = used_len + c * sizeof(VFD) ;
 					ProtoManager->GetSendHookFunc()(buf, total, c, 1, used_len);
-					Log(DefaultLogFile, "engine", DBG, "Send to Game Server, pto id=%d,name=%s", self->get_id(), (self->_pack_func_name).c_str());
+					//Log(DefaultLogFile, "engine", DBG, "Send to Game Server, pto id=%d,name=%s", self->get_id(), (self->_pack_func_name).c_str());
 					if (c < t) { //只广播一部分vfd.数据已经发送了，然后才raise出通知信息
 						//TODO
 					}
@@ -437,7 +439,7 @@ int net_protocol::unpack(lua_State*L, const byte* buf, int buf_len, int ext)
 	//assert(_unpack_ref != LUA_NOREF);
 	//DUMP_STAT_BEGIN 
 	if (_unpack_ref == LUA_NOREF) {
-		Log(DefaultLogFile, "engine", ERR, "no unpack function ,id:%d", _id);
+		//Log(DefaultLogFile, "engine", ERR, "no unpack function ,id:%d", _id);
 		return XYNET_ERROR_UNPACK_FORMAT ;
 	}
 	net_protocol::_total_unpack_count++ ;
@@ -457,7 +459,7 @@ int net_protocol::unpack(lua_State*L, const byte* buf, int buf_len, int ext)
 	
 		int cur_readed = _args[i]->unpack(L, buf+readed_len, buf_len-readed_len);
 		if (cur_readed == 0) {
-			Log(DefaultLogFile, "engine", ERR, "unpack argument fail. id:%d, seq:%d, type:%s",_id, i, _args[i]->get_type());
+			//Log(DefaultLogFile, "engine", ERR, "unpack argument fail. id:%d, seq:%d, type:%s",_id, i, _args[i]->get_type());
 			lua_settop(L, top);
 			//解包时数据包格式出错
 			return XYNET_ERROR_UNPACK_FORMAT ;
@@ -470,12 +472,12 @@ int net_protocol::unpack(lua_State*L, const byte* buf, int buf_len, int ext)
 	 // 调用远程函数,参数数量为 默认参数加远程参数数量
 	int status ;  
 	//DUMP_STAT_BEGIN 
-	status = lua_btcall(L, static_cast<int>(_args.size()+1), 0, 0);
+	status = lua_pcall(L, static_cast<int>(_args.size()+1), 0, 0);
 	//DUMP_STAT_END("PtoCall id=%d,count=%d", _id, _unpack_count) 
 	
 	if (status) {
 		const char* traceback = luaL_checkstring(L, -1);
-		Log(DefaultLogFile, "engine", ERR, "Gamer unpack data,run lua function error:%s", traceback);
+		//Log(DefaultLogFile, "engine", ERR, "Gamer unpack data,run lua function error:%s", traceback);
 		lua_settop(L, top);
 		//处理数据包逻辑出错
 		return XYNET_ERROR_UNPACK_SCRIPT ;
@@ -642,7 +644,7 @@ int gamer_unpack_data(lua_State*L, const byte* buf, int buf_size, int ext)
 		net_protocol* proto = _s_protos[proto_id];
 		
 		if (proto) {
-			Log(DefaultLogFile, "engine", DBG, "Get Game server pto Name:%s", (proto->GetPackFuncName()).c_str()); 
+			//Log(DefaultLogFile, "engine", DBG, "Get Game server pto Name:%s", (proto->GetPackFuncName()).c_str()); 
 			int cur_readed = proto->unpack(L, buf+readed_len, buf_size-readed_len, ext);
 			if (cur_readed < 0)  //出错
 				return cur_readed ;
@@ -653,13 +655,13 @@ int gamer_unpack_data(lua_State*L, const byte* buf, int buf_size, int ext)
 			return readed_len;
 		}
 		else {
-			Log(DefaultLogFile, "engine", ERR, "Gamer unpack data error:pto name:%s", (proto->GetPackFuncName()).c_str());
+			//Log(DefaultLogFile, "engine", ERR, "Gamer unpack data error:pto name:%s", (proto->GetPackFuncName()).c_str());
 			return XYNET_ERROR_UNPACK_FORMAT ;
 		}
 	}
 	catch (...)
 	{
-		Log(DefaultLogFile, "engine", ERR, "Gamer unpack data error,throw exception");
+		//Log(DefaultLogFile, "engine", ERR, "Gamer unpack data error,throw exception");
 		return XYNET_ERROR_UNPACK_FORMAT ;
 	}
 }
@@ -695,7 +697,7 @@ int InitPtoManager(lua_State * L)
 
 	if (PM) 
 	{
-		Log(DefaultLogFile, "engine", ERR, "Gamer Protocol has exsit!Can not Reload!");
+		//Log(DefaultLogFile, "engine", ERR, "Gamer Protocol has exsit!Can not Reload!");
 		return 0;
 	}
 
