@@ -63,15 +63,11 @@ class proto_manager {
 	unsigned _static_protocol_count ;  //静态的协议的个数
 	friend class net_protocol;
 public:
-	proto_manager();
+	proto_manager(send_hook_t func);
 	~proto_manager();
 
 	int stat (lua_State * L) ;
 
-	// 对外的引擎接口 
-//	int unpack_data(lua_State*L, const byte* buf, int buf_size, int ext);// 传入需解析的数据，返回实际解析的长度
-
-	// 对外的脚本接口
 	int add_arg_type(lua_State*L); // 栈顶为数据格式描述文件路径
 	int add_protocol(lua_State*L); // 栈顶为协议格式描述文件路径
 	int update_protocol(lua_State*L); // 更新协议
@@ -82,10 +78,12 @@ public:
 	char* GetForMaker(){return (!_for_maker)?(char*)"":_for_maker;};
 	char* GetForCaller(){return (!_for_caller)?(char*)"":_for_caller;};
 	std::vector<net_protocol*>& GetProtos() {return _s_protos;};
+	//打包和解包的函数
 	send_hook_t GetSendHookFunc() {return s_data_sender;};
 	int unpack_data(lua_State* L, const byte* buf, int buf_size, int ext);
 };
 
-extern proto_manager * PM;
 bool InitProtocolLib(lua_State * L);
+
+void CreateNewProtoManager(char* ProtoName, char* ForMaker, char* ForCaller,send_hook_t func);
 #endif //_PROTOCOL_H

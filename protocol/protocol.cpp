@@ -10,11 +10,15 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
+#include <map>
 
 typedef unsigned char byte;
 #define MAXTONETD 0x8000
 
 extern int HookSend (const byte *buf,  int len, unsigned int fd,int ismulticast = 0, int mcpayloadlen = 0);
+
+using namespace std;
+map<char*, proto_manager*> ProtoManagerMap;
 
 //////////////////////////////////////////////////////////////////////////
 // hash字符串，用于协议校验
@@ -72,7 +76,6 @@ int net_protocol::load(lua_State *L)
 	if (len== 0) {
 		//raise_error(L, "[proto error]: fail to read proto_desc file=%s\n!", file);
 		//Log(DefaultLogFile, "engine", ERR, "read file %s error!", file);
-		printf("read file %s error!\n", file);
 		return PROTO_ERROR;
 	}
 	int status = luaL_loadbuffer(L, read_buf, len, 0);
@@ -85,7 +88,6 @@ int net_protocol::load(lua_State *L)
 		int status = lua_pcall(L, 0, 1, 0);
 		if (status) {
 			//Log(DefaultLogFile, "engine", ERR, "lua call error!");
-			printf("lua call error!\n");
 			lua_settop(L, top);
 			return PROTO_ERROR;
 		}
@@ -508,9 +510,9 @@ int net_protocol::get_check_id(void)
 //send_hook_t proto_manager::s_data_sender = NULL;
 //unsigned proto_manager::_static_protocol_count = 0 ;
 
-proto_manager::proto_manager():_for_maker(NULL),_for_caller(NULL),_static_protocol_count(0)
+proto_manager::proto_manager(send_hook_t func):_for_maker(NULL),_for_caller(NULL),_static_protocol_count(0)
 {
-	s_data_sender = HookSend;
+	s_data_sender = func;
 	fcall_arg_manager::init();
 	// 添加一个默认协议，占用编号0
 	if (_s_protos.size() == 0) {
@@ -689,35 +691,13 @@ void proto_manager::SetForCaller(char* ForCaller)
 	strncpy(_for_caller, ForCaller, strlen(ForCaller)+1);
 }
 
-
-int InitPtoManager(lua_State * L)
+int GetProtoObj(lua_State* L)
 {
-	char* ForMakerStr = (char *)luaL_checkstring(L, 1);
-	char* ForCallerStr = (char *)luaL_checkstring(L, 2);
+	char* KeyName = (char *)luaL_checkstring(L, 1); 
+	if(!ProtoManagerMap.count(KeyName)) return 0;
 
-	if (PM) 
-	{
-		//Log(DefaultLogFile, "engine", ERR, "Gamer Protocol has exsit!Can not Reload!");
-		return 0;
-	}
-
-	PM = new proto_manager();	
-
-	PM->SetForMaker(ForMakerStr);
-	PM->SetForCaller(ForCallerStr);
-
-	return 0;
-}
-
-#include <stdio.h>
-
-int new_protocol_obj(lua_State* L)
-{
-	proto_manager* ProtoManager = new proto_manager();
-	ProtoManager->SetForMaker((char*)"for_maker");
-	ProtoManager->SetForCaller((char*)"for_caller");
-
-	lua_pushlightuserdata(L, (void*)ProtoManager);
+	proto_manager* pobj = ProtoManagerMap[KeyName];
+	lua_pushlightuserdata(L, (void*)pobj);
 
 	luaL_getmetatable(L, "meta.pto.object");
 	lua_setmetatable(L, -2);
@@ -762,7 +742,7 @@ int pto_stat(lua_State* L)
 
 
 static const struct luaL_Reg ProtoLib_f[] ={
-	{"new", new_protocol_obj},
+	{"GetProtoObj", GetProtoObj},
 	{NULL, NULL}
 };
 
@@ -783,4 +763,15 @@ bool InitProtocolLib(lua_State * L) {
     luaL_register(L, NULL, ProtoLib_m);
     luaL_register(L, "pto.object", ProtoLib_f);
 	return true;
+}
+
+void CreateNewProtoManager(char* ProtoName, char* ForMaker, char* ForCaller,send_hook_t func)
+{
+	if(ProtoManagerMap.count(ProtoName)) return;
+
+	proto_manager* pobj = new proto_manager(func);
+	pobj->SetForMaker(ForMaker);
+	pobj->SetForCaller(ForCaller);
+
+	ProtoManagerMap[ProtoName] = pobj;
 }
