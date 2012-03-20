@@ -4,9 +4,13 @@
 #define _PROTOCOL_H
 
 #include "data_format.h"
+#include <map>
+#include <string>
 
 #define XYNET_ERROR_UNPACK_FORMAT	-1  //解包时数据包格式出错
 #define XYNET_ERROR_UNPACK_SCRIPT	-2  //脚本处理正确的数据包出错
+
+using namespace std;
 
 typedef unsigned int VFD;
 
@@ -85,5 +89,6 @@ public:
 
 bool InitProtocolLib(lua_State * L);
 
-void CreateNewProtoManager(char* ProtoName, char* ForMaker, char* ForCaller,send_hook_t func);
+void CreateNewProtoManager(string ProtoName, char* ForMaker, char* ForCaller,send_hook_t func);
+extern map<string, proto_manager*> ProtoManagerMap;
 #endif //_PROTOCOL_H

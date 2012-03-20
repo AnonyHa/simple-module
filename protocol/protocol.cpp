@@ -18,7 +18,7 @@ typedef unsigned char byte;
 extern int HookSend (const byte *buf,  int len, unsigned int fd,int ismulticast = 0, int mcpayloadlen = 0);
 
 using namespace std;
-map<char*, proto_manager*> ProtoManagerMap;
+map<string, proto_manager*> ProtoManagerMap;
 
 //////////////////////////////////////////////////////////////////////////
 // hash字符串，用于协议校验
@@ -694,9 +694,10 @@ void proto_manager::SetForCaller(char* ForCaller)
 int GetProtoObj(lua_State* L)
 {
 	char* KeyName = (char *)luaL_checkstring(L, 1); 
-	if(!ProtoManagerMap.count(KeyName)) return 0;
+	string KeyStr(KeyName);
+	if(!ProtoManagerMap.count(KeyStr)) return 0;
 
-	proto_manager* pobj = ProtoManagerMap[KeyName];
+	proto_manager* pobj = ProtoManagerMap[KeyStr];
 	lua_pushlightuserdata(L, (void*)pobj);
 
 	luaL_getmetatable(L, "meta.pto.object");
@@ -765,7 +766,7 @@ bool InitProtocolLib(lua_State * L) {
 	return true;
 }
 
-void CreateNewProtoManager(char* ProtoName, char* ForMaker, char* ForCaller,send_hook_t func)
+void CreateNewProtoManager(string ProtoName, char* ForMaker, char* ForCaller,send_hook_t func)
 {
 	if(ProtoManagerMap.count(ProtoName)) return;
 
