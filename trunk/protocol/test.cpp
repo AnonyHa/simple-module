@@ -38,8 +38,6 @@ int main(void)
 	InitProtocolLib(L);
     luaL_dofile(L,"test.lua");
 
-	//bitset<1024> bit(new string("0xff"));
-	//cout << bit<<endl;
 	byte buf[9];
 	unsigned char m;
 	m=0x01;
@@ -66,7 +64,7 @@ int main(void)
 	m=0x6f;
 	memcpy(buf+8, &m, 1);
 
-	gamer_unpack_data(L, (const byte *)buf, 9, 6666);
+	//gamer_unpack_data(L, (const byte *)buf, 9, 6666);
    
     return 0;
 }

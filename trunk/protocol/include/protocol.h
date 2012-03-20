@@ -22,7 +22,6 @@ class net_protocol {
 	int _id ;					 // 协议id，有管理器自动分配
 	bool _is_maker;				 // 是否为远程函数定义者
 	proto_manager* _ProtoManager;
-	friend class proto_manager ;
 protected:
 	int process_type(lua_State *L, const char* path);
 	int convert_protocol(lua_State *L) ;
@@ -64,7 +63,7 @@ class proto_manager {
 	unsigned _static_protocol_count ;  //静态的协议的个数
 	friend class net_protocol;
 public:
-	proto_manager(send_hook_t func);
+	proto_manager();
 	~proto_manager();
 
 	int stat (lua_State * L) ;
@@ -84,9 +83,9 @@ public:
 	char* GetForCaller(){return (!_for_caller)?(char*)"":_for_caller;};
 	std::vector<net_protocol*>& GetProtos() {return _s_protos;};
 	send_hook_t GetSendHookFunc() {return s_data_sender;};
+	int unpack_data(lua_State* L, const byte* buf, int buf_size, int ext);
 };
 
 extern proto_manager * PM;
 bool InitProtocolLib(lua_State * L);
-int gamer_unpack_data(lua_State*L, const byte* buf, int buf_size, int ext);
 #endif //_PROTOCOL_H
