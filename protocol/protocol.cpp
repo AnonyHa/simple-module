@@ -766,13 +766,14 @@ bool InitProtocolLib(lua_State * L) {
 	return true;
 }
 
-void CreateNewProtoManager(string ProtoName, char* ForMaker, char* ForCaller,send_hook_t func)
+proto_manager* CreateNewProtoManager(string ProtoName, char* ForMaker, char* ForCaller,send_hook_t func)
 {
-	if(ProtoManagerMap.count(ProtoName)) return;
+	if(ProtoManagerMap.count(ProtoName)) return NULL;
 
 	proto_manager* pobj = new proto_manager(func);
 	pobj->SetForMaker(ForMaker);
 	pobj->SetForCaller(ForCaller);
 
 	ProtoManagerMap[ProtoName] = pobj;
+	return pobj;
 }
