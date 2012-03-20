@@ -89,6 +89,6 @@ public:
 
 bool InitProtocolLib(lua_State * L);
 
-void CreateNewProtoManager(string ProtoName, char* ForMaker, char* ForCaller,send_hook_t func);
+proto_manager* CreateNewProtoManager(string ProtoName, char* ForMaker, char* ForCaller,send_hook_t func);
 extern map<string, proto_manager*> ProtoManagerMap;
 #endif //_PROTOCOL_H

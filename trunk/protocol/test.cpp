@@ -27,6 +27,17 @@ int HookSend (const byte* buf, int len, unsigned int fd,int ismulticast = 0, int
     return 0;
 }
 
+int HookSend1 (const byte* buf, int len, unsigned int fd,int ismulticast = 0, int mcpayloadlen = 0)
+{
+    printf("the 11111111111 len is:%d\n",len);
+    for(int i=0;i<len;i++)
+        printf("%02x ",buf[i]);
+	printf("\n");
+    return 0;
+}
+
+
+
 std::string cur_char = "client";
 
 int main(void)
@@ -35,7 +46,8 @@ int main(void)
     luaL_openlibs(L);
 	InitProtocolLib(L);
 
-	CreateNewProtoManager(string("cishi"), (char*)"for_maker",(char*)"for_caller",HookSend);
+	proto_manager* Pobj = CreateNewProtoManager(string("cishi"), (char*)"for_maker",(char*)"for_caller",HookSend);
+	proto_manager* Pobj1 = CreateNewProtoManager(string("cishi_test"), (char*)"for_maker_test",(char*)"for_caller_test",HookSend1);
     luaL_dofile(L,"test.lua");
 
 	byte buf[9];
@@ -64,8 +76,9 @@ int main(void)
 	m=0x6f;
 	memcpy(buf+8, &m, 1);
 
-	//gamer_unpack_data(L, (const byte *)buf, 9, 6666);
+	Pobj->unpack_data(L, (const byte *)buf, 9, 6666);
 	printf("Task End!\n");
+	Pobj1->unpack_data(L, (const byte *)buf, 9, 6667);
 
     return 0;
 }
