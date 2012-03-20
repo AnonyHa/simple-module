@@ -36,6 +36,8 @@ int main(void)
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 	InitProtocolLib(L);
+
+	CreateNewProtoManager((char*)"cishi", (char*)"for_maker",(char*)"for_caller",HookSend);
     luaL_dofile(L,"test.lua");
 
 	byte buf[9];
