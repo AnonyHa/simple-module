@@ -29,15 +29,13 @@ int HookSend (const byte* buf, int len, unsigned int fd,int ismulticast = 0, int
 
 std::string cur_char = "client";
 
-proto_manager * PM;
-
 int main(void)
 {
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 	InitProtocolLib(L);
 
-	CreateNewProtoManager((char*)"cishi", (char*)"for_maker",(char*)"for_caller",HookSend);
+	CreateNewProtoManager(string("cishi"), (char*)"for_maker",(char*)"for_caller",HookSend);
     luaL_dofile(L,"test.lua");
 
 	byte buf[9];
@@ -67,6 +65,7 @@ int main(void)
 	memcpy(buf+8, &m, 1);
 
 	//gamer_unpack_data(L, (const byte *)buf, 9, 6666);
-   
+	printf("Task End!\n");
+
     return 0;
 }
