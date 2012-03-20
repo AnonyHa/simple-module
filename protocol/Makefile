@@ -9,4 +9,4 @@ All:
 	g++ -c test.cpp -I $(LUA_INC) -I $(INC_PATH)
 	g++ -o test test.o protocol.o data_format.o $(LUA_LIB)
 clean:
-	rm -rf *.o test
+	rm -rf *.o test test.core

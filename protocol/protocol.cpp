@@ -508,9 +508,9 @@ int net_protocol::get_check_id(void)
 //send_hook_t proto_manager::s_data_sender = NULL;
 //unsigned proto_manager::_static_protocol_count = 0 ;
 
-proto_manager::proto_manager(send_hook_t func):_for_maker(NULL),_for_caller(NULL),_static_protocol_count(0)
+proto_manager::proto_manager():_for_maker(NULL),_for_caller(NULL),_static_protocol_count(0)
 {
-	s_data_sender = func;
+	s_data_sender = HookSend;
 	fcall_arg_manager::init();
 	// 添加一个默认协议，占用编号0
 	if (_s_protos.size() == 0) {
@@ -619,7 +619,7 @@ int proto_manager::update_protocol(lua_State* L)
 
 // 传入需解析的数据，返回实际解析的长度
 // 返回值必须大于 0
-int gamer_unpack_data(lua_State*L, const byte* buf, int buf_size, int ext)
+int proto_manager::unpack_data(lua_State*L, const byte* buf, int buf_size, int ext)
 {
 	try
 	{
@@ -636,7 +636,7 @@ int gamer_unpack_data(lua_State*L, const byte* buf, int buf_size, int ext)
 			memcpy(&proto_id, buf+1, 2);
 		}
 
-		std::vector<net_protocol *> _s_protos = PM->GetProtos();
+		std::vector<net_protocol *> _s_protos = GetProtos();
 		if (proto_id >= _s_protos.size()) {
 			return XYNET_ERROR_UNPACK_FORMAT ;
 		}
@@ -701,7 +701,7 @@ int InitPtoManager(lua_State * L)
 		return 0;
 	}
 
-	PM = new proto_manager(HookSend);	
+	PM = new proto_manager();	
 
 	PM->SetForMaker(ForMakerStr);
 	PM->SetForCaller(ForCallerStr);
@@ -709,55 +709,78 @@ int InitPtoManager(lua_State * L)
 	return 0;
 }
 
-static int gamer_add_arg_type(lua_State* L)
+#include <stdio.h>
+
+int new_protocol_obj(lua_State* L)
 {
-	return PM->add_arg_type(L);
+	proto_manager* ProtoManager = new proto_manager();
+	ProtoManager->SetForMaker((char*)"for_maker");
+	ProtoManager->SetForCaller((char*)"for_caller");
+
+	lua_pushlightuserdata(L, (void*)ProtoManager);
+
+	luaL_getmetatable(L, "meta.pto.object");
+	lua_setmetatable(L, -2);
+	return 1;
 }
 
-static int gamer_add_protocol(lua_State* L)
+int pto_add_arg_type(lua_State* L)
 {
-	return PM->add_protocol(L);
+	proto_manager* ProtoManager = (proto_manager*)luaL_checkudata(L, 1, "meta.pto.object");	
+	return ProtoManager->add_arg_type(L);
 }
 
-static int gamer_update_protocol(lua_State* L)
+int pto_add_protocol(lua_State* L)
 {
-	return PM->update_protocol(L);
+	proto_manager* ProtoManager = (proto_manager*)luaL_checkudata(L, 1, "meta.pto.object");	
+	return ProtoManager->add_protocol(L);
 }
 
-static int gamer_add_static_protocol(lua_State* L)
+int pto_update_protocol(lua_State* L)
 {
-	return PM->add_static_protocol(L);
+	proto_manager* ProtoManager = (proto_manager*)luaL_checkudata(L, 1, "meta.pto.object");	
+	return ProtoManager->update_protocol(L);
 }
 
-static int gamer_init_proto_manager(lua_State* L)
+int pto_add_static_protocol(lua_State* L)
 {
-	return InitPtoManager(L);
+	proto_manager* ProtoManager = (proto_manager*)luaL_checkudata(L, 1, "meta.pto.object");	
+	return ProtoManager->add_static_protocol(L);
 }
 
-static int gamer_get_ptos_checkid(lua_State* L)
+int pto_get_ptos_checkid(lua_State* L)
 {
-	return PM->get_ptos_checkid(L);
+	proto_manager* ProtoManager = (proto_manager*)luaL_checkudata(L, 1, "meta.pto.object");	
+	return ProtoManager->get_ptos_checkid(L);
 }
 
-static int gamer_stat(lua_State* L)
+int pto_stat(lua_State* L)
 {
-	return PM->stat(L);
+	proto_manager* ProtoManager = (proto_manager*)luaL_checkudata(L, 1, "meta.pto.object");	
+	return ProtoManager->stat(L);
 }
 
-static const luaL_Reg  ProtoLib [] = {
-        { "add_arg_type", gamer_add_arg_type},
-        { "add_protocol", gamer_add_protocol},
-        { "update_protocol", gamer_update_protocol},
-        { "add_static_protocol", gamer_add_static_protocol},
-	    { "init_pto", gamer_init_proto_manager},
-        { "get_check_sum", gamer_get_ptos_checkid},
-        { "stat", gamer_stat},
+
+static const struct luaL_Reg ProtoLib_f[] ={
+	{"new", new_protocol_obj},
+	{NULL, NULL}
+};
+
+static const struct luaL_Reg ProtoLib_m[] = {
+        { "add_arg_type", pto_add_arg_type},
+        { "add_protocol", pto_add_protocol},
+        { "update_protocol", pto_update_protocol},
+        { "add_static_protocol", pto_add_static_protocol},
+        { "get_check_sum", pto_get_ptos_checkid},
+        { "stat", pto_stat},
         { NULL, NULL}
 };
 
 bool InitProtocolLib(lua_State * L) {
-	assert(L);
-	lua_gc(L, LUA_GCRESTART, 0);
-	luaL_register(L, "proto", ProtoLib);
+    luaL_newmetatable(L, "meta.pto.object");
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+    luaL_register(L, NULL, ProtoLib_m);
+    luaL_register(L, "pto.object", ProtoLib_f);
 	return true;
 }
