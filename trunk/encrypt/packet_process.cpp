@@ -69,9 +69,6 @@ void clsPacketDecrypt::DecryptPacket(char* Buf,int BufLen)
 		DecLen = BufLen;	
 	}
 
-	printf("==========\n");
-	printf("Get Dec Len:%d\n", DecLen);
-
 	if(DecLen > 0)
 		_DecryptBuf->InsertData(DecryptBuf, DecLen, RealLen);			
 
@@ -96,7 +93,6 @@ void clsPacketDecrypt::BagProcess()
 		}		
 		else
 		{
-			printf("Get Some Data:%d %d\n", _DecryptBuf->GetBufLen(), _BagLen);
 			if(_DecryptBuf->GetBufLen() < _BagLen) return; 
 			int RealLen;	
 			char* BagBuf = _DecryptBuf->GetBufData(_BagLen, RealLen);

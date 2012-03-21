@@ -63,7 +63,6 @@ class SimpleXOR:public clsEncrypt{
 				//放种子到SocketStream	
 				memcpy(Output, &RandomSeed, SeedLen);
 				SeedOffset = SeedLen;
-				printf("In ENCRYPT, Send Seed=%d\n", RandomSeed);
 			}
 			else
 			{
@@ -95,7 +94,6 @@ class SimpleXOR:public clsEncrypt{
 					int Seed = *((int *)Input);
 					SetSeed(Seed);
 					StartLen = sizeof(int);
-					printf("In DECRYPT,Get Seed=%d\n", Seed);
 				}
 			}
 
