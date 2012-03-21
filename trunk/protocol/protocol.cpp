@@ -748,13 +748,13 @@ static const struct luaL_Reg ProtoLib_f[] ={
 };
 
 static const struct luaL_Reg ProtoLib_m[] = {
-        { "add_arg_type", pto_add_arg_type},
-        { "add_protocol", pto_add_protocol},
-        { "update_protocol", pto_update_protocol},
-        { "add_static_protocol", pto_add_static_protocol},
-        { "get_check_sum", pto_get_ptos_checkid},
-        { "stat", pto_stat},
-        { NULL, NULL}
+	{ "add_arg_type", pto_add_arg_type},
+    { "add_protocol", pto_add_protocol},
+    { "update_protocol", pto_update_protocol},
+    { "add_static_protocol", pto_add_static_protocol},
+    { "get_check_sum", pto_get_ptos_checkid},
+    { "stat", pto_stat},
+    { NULL, NULL}
 };
 
 bool InitProtocolLib(lua_State * L) {
@@ -776,4 +776,10 @@ proto_manager* CreateNewProtoManager(string ProtoName, char* ForMaker, char* For
 
 	ProtoManagerMap[ProtoName] = pobj;
 	return pobj;
+}
+
+proto_manager* GetProtoManager(string ProtoName)
+{
+	if(!ProtoManagerMap.count(ProtoName)) return NULL;
+	return ProtoManagerMap[ProtoName];
 }
