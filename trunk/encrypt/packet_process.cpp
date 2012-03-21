@@ -94,6 +94,7 @@ void clsPacketDecrypt::BagProcess()
 		}		
 		else
 		{
+			printf("Get Some Data:%d %d\n", _DecryptBuf->GetBufLen(), _BagLen);
 			if(_DecryptBuf->GetBufLen() < _BagLen) return; 
 			int RealLen;	
 			char* BagBuf = _DecryptBuf->GetBufData(_BagLen, RealLen);
