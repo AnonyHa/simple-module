@@ -69,6 +69,8 @@ void clsPacketDecrypt::DecryptPacket(char* Buf,int BufLen)
 		DecLen = BufLen;	
 	}
 
+	printf("==========\n");
+	printf("Get Dec Len:%d\n", DecLen);
 
 	if(DecLen > 0)
 		_DecryptBuf->InsertData(DecryptBuf, DecLen, RealLen);			
