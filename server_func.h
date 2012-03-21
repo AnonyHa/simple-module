@@ -21,15 +21,12 @@ class SimpleServerFunc:public PacketInterface{
 			SimpleXOR* encrypt = new SimpleXOR();
 			SimpleXOR* decrypt = new SimpleXOR();
 			_EncryptObj = new clsPacketEncrypt(encrypt);
-			_DecryptObj = new clsPacketDecrypt(encrypt);
+			_DecryptObj = new clsPacketDecrypt(decrypt);
 		}
 
 		bool PacketOnRead(int Vfd, char * Buf, int BufLen)
 		{
-			
-			cout << "Get Vfd="<<Vfd<<" Msg:"<<endl;
 			_DecryptObj->DecryptPacket(Buf, BufLen);
-
 			return true;
 		};
 
@@ -50,7 +47,6 @@ class SimpleServerFunc:public PacketInterface{
 			int OutLen;
 			char* Output;
 			Output = _EncryptObj->EncryptPacket(Buf, BufLen, OutLen);	
-			cout << "Send Data Len="<<OutLen<<endl;
 			if (OutLen>0) PacketOnWrite(Vfd, Output, OutLen);
 			return OutLen;
 		};

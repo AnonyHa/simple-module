@@ -26,7 +26,6 @@ class SimplePacketFunc:public PacketInterface{
 
 		bool PacketOnRead(int Vfd, char* Buf, int BufLen)
 		{
-			cout << "Vfd="<<Vfd<<"Get Msg:";
 			_DecryptObj->DecryptPacket(Buf, BufLen);
 			return true;
 		};
@@ -38,7 +37,7 @@ class SimplePacketFunc:public PacketInterface{
 		};
 		bool PacketOnConnect(int Vfd)
 		{
-			cout << "Connect OK!"<<Vfd<<endl;
+			cout << Vfd << "Connect OK!"<<endl;
 			char* TmpBuf="conn ok!";
 			WriteData(Vfd, TmpBuf, strlen(TmpBuf));
 			return true;
@@ -48,7 +47,6 @@ class SimplePacketFunc:public PacketInterface{
 			int OutLen;
 			char* Output;
 			Output = _EncryptObj->EncryptPacket(Buf, BufLen, OutLen);	
-			cout << "Send Data Len="<<OutLen<<endl;
 			if (OutLen>0) PacketOnWrite(Vfd, Output, OutLen);
 			return OutLen;
 		};
