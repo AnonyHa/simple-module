@@ -46,8 +46,9 @@ int main(void)
     luaL_openlibs(L);
 	InitProtocolLib(L);
 
-	proto_manager* Pobj = CreateNewProtoManager(string("cishi"), (char*)"for_maker",(char*)"for_caller",HookSend);
-	proto_manager* Pobj1 = CreateNewProtoManager(string("cishi_test"), (char*)"for_maker_test",(char*)"for_caller_test",HookSend1);
+	proto_manager* Pobj = CreateNewProtoManager(L, string("cishi"), (char*)"for_maker",(char*)"for_caller",HookSend);
+	proto_manager* Pobj1 = CreateNewProtoManager(L, string("cishi_test"), (char*)"for_maker_test",(char*)"for_caller_test",HookSend1);
+
     luaL_dofile(L,"test.lua");
 
 	byte buf[9];

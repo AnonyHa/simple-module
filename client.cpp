@@ -18,7 +18,7 @@ int main(void)
 	
 	try{
 		SimplePacketFunc* SimpleFunc = new SimplePacketFunc();
-		clsClientSocket* Test = Manager->CreateClientSocket(string("192.168.84.128"), 6666, SimpleFunc);
+		clsClientSocket* Test = Manager->CreateClientSocket(string("192.168.10.48"), 6666, SimpleFunc);
 	}
 	catch(SocketError& e)
 	{

@@ -1,5 +1,5 @@
-for_maker = {}
-for_caller = {}
+--for_maker = {}
+--for_caller = {}
 
 for_maker.c_simple = function (vfd, Id, Name)
 	print(vfd, Id, Name)
@@ -13,8 +13,8 @@ for_caller.s_simple(9999, 1985, "zero")
 
 print("======================================================")
 
-for_maker_test = {}
-for_caller_test = {}
+--for_maker_test = {}
+--for_caller_test = {}
 
 for_maker_test.c_simple_test = function(vfd, Id, Name)
 	print("Another Pto", vfd, Id, Name)

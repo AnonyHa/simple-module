@@ -26,7 +26,7 @@ class SimpleServerFunc:public PacketInterface{
 
 		bool PacketOnRead(int Vfd, char * Buf, int BufLen)
 		{
-			_DecryptObj->DecryptPacket(Buf, BufLen);
+			_DecryptObj->DecryptPacket(Vfd, Buf, BufLen);
 			return true;
 		};
 
@@ -39,6 +39,9 @@ class SimpleServerFunc:public PacketInterface{
 		{
 			char* Buf="Hello World";
 			WriteData(Vfd, Buf, strlen(Buf));
+
+			char* Buf1="another Msg!";
+			WriteData(Vfd, Buf1, strlen(Buf1));
 			return true;
 		};
 
@@ -46,7 +49,7 @@ class SimpleServerFunc:public PacketInterface{
 		{
 			int OutLen;
 			char* Output;
-			Output = _EncryptObj->EncryptPacket(Buf, BufLen, OutLen);	
+			Output = _EncryptObj->EncryptPacket(Vfd, Buf, BufLen, OutLen);	
 			if (OutLen>0) PacketOnWrite(Vfd, Output, OutLen);
 			return OutLen;
 		};

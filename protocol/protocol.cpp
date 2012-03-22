@@ -7,6 +7,7 @@
 //#include "lbacktrace.h"
 //#include "macros.h"
 
+#include <iostream>
 #include <string>
 #include <cstring>
 #include <cstdlib>
@@ -766,7 +767,7 @@ bool InitProtocolLib(lua_State * L) {
 	return true;
 }
 
-proto_manager* CreateNewProtoManager(string ProtoName, char* ForMaker, char* ForCaller,send_hook_t func)
+proto_manager* CreateNewProtoManager(lua_State * L, string ProtoName, char* ForMaker, char* ForCaller,send_hook_t func)
 {
 	if(ProtoManagerMap.count(ProtoName)) return NULL;
 
@@ -775,6 +776,25 @@ proto_manager* CreateNewProtoManager(string ProtoName, char* ForMaker, char* For
 	pobj->SetForCaller(ForCaller);
 
 	ProtoManagerMap[ProtoName] = pobj;
+
+	//在脚本层生成ForMaker和ForCaller两张表
+	int TopIndex = lua_gettop(L);
+	lua_getglobal(L,ForMaker);	
+	lua_getglobal(L,ForCaller);
+	if( !(lua_isnil(L, -1) && lua_isnil(L, -2)))
+	{
+		//脚本层冲突
+		cerr<< ForMaker << " or "<<ForCaller << "is not nil!" <<endl;
+		return NULL;
+	}
+
+	lua_newtable(L);
+	lua_setglobal(L, ForMaker);
+
+	lua_newtable(L);
+	lua_setglobal(L, ForCaller);
+
+	lua_settop(L, TopIndex);
 	return pobj;
 }
 

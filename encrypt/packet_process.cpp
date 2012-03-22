@@ -10,7 +10,7 @@ clsPacketEncrypt::~clsPacketEncrypt()
 {
 }
 
-char* clsPacketEncrypt::EncryptPacket(char* Buf, int BufLen, int& RealLen)
+char* clsPacketEncrypt::EncryptPacket(int Vfd, char* Buf, int BufLen, int& RealLen)
 {
 	int BagLen = sizeof(int);
 	unsigned char* tmp = new unsigned char[BagLen+BufLen];
@@ -55,7 +55,7 @@ clsPacketDecrypt::~clsPacketDecrypt()
 	delete _DecryptBuf;
 }
 
-void clsPacketDecrypt::DecryptPacket(char* Buf,int BufLen)
+void clsPacketDecrypt::DecryptPacket(int Vfd, char* Buf,int BufLen)
 {
 	int DecLen;
 	char* DecryptBuf;
@@ -72,10 +72,10 @@ void clsPacketDecrypt::DecryptPacket(char* Buf,int BufLen)
 	if(DecLen > 0)
 		_DecryptBuf->InsertData(DecryptBuf, DecLen, RealLen);			
 
-	BagProcess();
+	BagProcess(Vfd);
 }
 
-void clsPacketDecrypt::BagProcess()
+void clsPacketDecrypt::BagProcess(int Vfd)
 {
 	while(1)
 	{
