@@ -13,8 +13,8 @@ int main()
 	const char* Input="abcdef";
 	char* Output;
 	int OutLen;
-	Output = EncryptObj->EncryptPacket((char *)Input, 6, OutLen);
+	Output = EncryptObj->EncryptPacket(1, (char *)Input, 6, OutLen);
 	printf("Encrypt OutLen:%d\n", OutLen);
-	DecryptObj->DecryptPacket(Output, OutLen);
+	DecryptObj->DecryptPacket(2,Output, OutLen);
 	printf("Decrypt OutLen:%d\n", OutLen);
 }

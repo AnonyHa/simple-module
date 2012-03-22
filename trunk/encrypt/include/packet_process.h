@@ -14,7 +14,7 @@ class clsPacketEncrypt{
 	public:
 		clsPacketEncrypt(clsEncrypt* EncryptClass=0);
 		~clsPacketEncrypt();
-		char* EncryptPacket(char* Buf, int BufLen,int& RealLen);
+		char* EncryptPacket(int Vfd, char* Buf, int BufLen,int& RealLen);
 };
 
 class clsPacketDecrypt{
@@ -22,12 +22,11 @@ class clsPacketDecrypt{
 		MyBuf* _DecryptBuf;
 		unsigned int _BagLen;
 		bool _BagFlag;
-		void BagProcess();
+		void BagProcess(int Vfd);
 		clsEncrypt* _EncryptClass;
 	public:
 		clsPacketDecrypt(clsEncrypt* EncryptClass=0);
 		~clsPacketDecrypt();
-		void DecryptPacket(char* Buf, int BufLen);
+		void DecryptPacket(int Vfd, char* Buf, int BufLen);
 };
-
 #endif
