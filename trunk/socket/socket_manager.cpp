@@ -110,7 +110,7 @@ void SocketManager::ShowInfo()
 	map< int,clsPeerPoint*>::iterator IterPeerObj = PeerObjList.begin();
 	while(IterPeerObj!=PeerObjList.end())
 	{
-		cout << IterPeerObj->first;
+		cout << IterPeerObj->first<<",";
 		IterPeerObj++;
 	}
 	cout << "}"<<endl;
@@ -118,11 +118,35 @@ void SocketManager::ShowInfo()
 
 bool SocketManager::PeerVfdOnClose(int PeerVfd)
 {
-	clsPeerPoint* PeerObj = NULL;
-	GET_MAP_VALUE(PeerObjList, PeerVfd, PeerObj);
-	if (!PeerObj) return false;
+	clsPeerPoint* p = NULL;
+	GET_MAP_VALUE(PeerObjList, PeerVfd, p);
+	if (!p) return false;
 
-	return DelPeerVfd(PeerObj->GetVfd(), PeerObj->GetVfdType());
+	if(p->GetVfdType() == SERVER_TYPE)
+	{
+		clsServerSocket* ServerSock = NULL;
+		GET_MAP_VALUE(PeerVfd2ServerObj, PeerVfd, ServerSock);
+		if (!ServerSock) return false;
+
+		if (ServerSock->GetPacketInterface())	
+		{
+			ServerSock->GetPacketInterface()->PacketOnError(PeerVfd);
+		}
+	}
+	else if(p->GetVfdType() == CLIENT_TYPE)
+	{
+		clsClientSocket* ClientSock = NULL;
+		GET_MAP_VALUE(PeerVfd2ClientObj, PeerVfd, ClientSock);
+		if (!ClientSock) return false;
+
+		if (ClientSock->GetPacketInterface())
+		{
+			ClientSock->GetPacketInterface()->PacketOnError(PeerVfd);
+		}
+	}
+
+
+	return DelPeerVfd(p->GetVfd(), p->GetVfdType());
 }
 
 bool SocketManager::DelPeerVfd(int PeerVfd, int DelType)

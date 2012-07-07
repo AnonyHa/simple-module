@@ -55,11 +55,13 @@ void clsPeerPoint::OnError(struct bufferevent* buf_ev, short error_no, void* arg
 	_Status = 0;
 	Manager->PeerVfdOnClose(_Vfd);
 	close(_Vfd);
+	Manager->ShowInfo();
 }
 
 void clsPeerPoint::OnConnect(int Vfd)
 {
 	Manager->PeerVfdOnConnect(Vfd);
+	Manager->ShowInfo();
 }
 
 bool clsPeerPoint::WriteData(char* Buf, int BufLen)
