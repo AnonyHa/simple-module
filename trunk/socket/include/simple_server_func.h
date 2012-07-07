@@ -28,9 +28,9 @@ class SimpleServerFunc:public PacketInterface{
 		};
 		bool PacketOnConnect(int Vfd)
 		{
-			char* Buf="Hello World";
+			const char* Buf="Hello World";
 			printf("Server Get Packet Connect!\n");
-			if(! PacketOnWrite(Vfd, Buf, strlen(Buf)) )
+			if(! PacketOnWrite(Vfd, (char *)Buf, strlen(Buf)) )
 				printf("Server Try Send Msg Error!\n");
 			return true;
 		};

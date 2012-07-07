@@ -28,8 +28,8 @@ class SimplePacketFunc:public PacketInterface{
 		bool PacketOnConnect(int Vfd)
 		{
 			cout << "Connect OK!"<<Vfd<<endl;
-			char* TmpBuf="conn ok!";
-			if (!PacketOnWrite(Vfd, TmpBuf, strlen(TmpBuf)))
+			const char* TmpBuf="conn ok!";
+			if (!PacketOnWrite(Vfd, (char*)TmpBuf, strlen(TmpBuf)))
 				printf("Client Send Msg Error!\n");
 			return true;
 		};
