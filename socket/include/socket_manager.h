@@ -11,21 +11,35 @@
 #include <map>
 #include <vector>
 
+#define SERVER_TYPE 1
+#define CLIENT_TYPE 2
+
+#define GET_MAP_VALUE(Map,Key,RetVal) {if (Map.count(Key)) RetVal=Map[Key];}
 
 class SocketManager {
 	private:
-		map< int, vector<int> > ServerList;
-		vector<int> ClientList;
-		map<int, StructSock *> PeerList;
-		bool DelServerPeerVfd(int ServerVfd, int PeerVfd);//只是删除相应的PeerVfd
+		//三个不同的ObjMap
+		map< int, clsServerSocket* > ServerObjList;
+		map< int, clsClientSocket* > ClientObjList;
+		map< int, clsPeerPoint* > PeerObjList;
+		//核心的抽象对象 PeerVfd与ServerVfd,以及ClientVfd的映射
+		map< int, int> PeerVfd2ServerVfd;
+		map< int, int> PeerVfd2ClientVfd;
+
+
 		bool DelClientVfd(int ClientVfd);
+		bool DelServerVfd(int ServerVfd);
+		bool DelPeerVfd(int PeerVfd);
 	public:
 		clsServerSocket* CreateServerSocket(int Port, PacketInterface* PacketClass = 0);		
 		clsClientSocket* CreateClientSocket(string Ip, int Port, PacketInterface* PacketClass = 0);
-		bool AddServerVfdList(int ServerVfd, int ClientVfd);
-		bool AddClientVfdList(int ClientVfd);
-		bool AddServerPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, clsServerSocket* ServerObj);
-		bool AddClientPeerVfdList(int PeerVfd, clsPeerPoint* PeerObj, clsClientSocket* ClientObj);
+
+		bool AddPeerServerVfdMap(int PeerVfd, int MapVfd);
+		bool AddPeerClientVfdMap(int PeerVfd, int MapVfd);
+		bool AddServerObj(int ServerVfd, clsServerSocket* ServerObj);
+		bool AddClientObj(int ClientVfd, clsClientSocket* ClientObj);
+		bool AddPeerObj(int PeerVfd, clsPeerPoint* PeerObj);
+
 		void ShowInfo();
 		bool PeerVfdOnClose(int PeerVfd);
 		bool PeerVfdOnRead(int PeerVfd, char* Buf, int BufLen);
