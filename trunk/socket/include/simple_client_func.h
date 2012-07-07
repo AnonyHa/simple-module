@@ -29,7 +29,8 @@ class SimplePacketFunc:public PacketInterface{
 		{
 			cout << "Connect OK!"<<Vfd<<endl;
 			char* TmpBuf="conn ok!";
-			PacketOnWrite(Vfd, TmpBuf, strlen(TmpBuf));
+			if (!PacketOnWrite(Vfd, TmpBuf, strlen(TmpBuf)))
+				printf("Client Send Msg Error!\n");
 			return true;
 		};
 

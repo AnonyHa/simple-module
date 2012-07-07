@@ -12,7 +12,7 @@ class clsServerSocket{
 	public:
 		clsServerSocket(int Port, PacketInterface* PacketClass = 0):_MaxNumber(1024) {_Port=Port;_PacketClass = PacketClass;};
 		void Start();
-		int GetServerVfd() {return _Vfd;};
+		int GetVfd() {return _Vfd;};
 		int GetPort() {return _Port;};
 		PacketInterface* GetPacketInterface() {return _PacketClass;};
 };

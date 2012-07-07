@@ -19,9 +19,10 @@ void PeerOnError(struct bufferevent * buf_ev, short error_no, void * arg)
 	p->OnError(buf_ev, error_no, arg);
 }
 
-clsPeerPoint::clsPeerPoint(int Vfd)
+clsPeerPoint::clsPeerPoint(int Vfd, int VfdType)
 {
 	_Vfd = Vfd;
+	_VfdType = VfdType;
 	_BuffEv = bufferevent_new(_Vfd, PeerOnRead, NULL, PeerOnError, this);
 	bufferevent_enable(_BuffEv, EV_READ);
 	_Status = 1;
@@ -54,5 +55,11 @@ void clsPeerPoint::OnError(struct bufferevent* buf_ev, short error_no, void* arg
 	_Status = 0;
 	Manager->PeerVfdOnClose(_Vfd);
 	close(_Vfd);
+	Manager->ShowInfo();
+}
+
+void clsPeerPoint::OnConnect(int Vfd)
+{
+	Manager->PeerVfdOnConnect(Vfd);
 	Manager->ShowInfo();
 }

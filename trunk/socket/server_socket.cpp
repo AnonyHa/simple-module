@@ -40,18 +40,12 @@ void NewConnect(int listenfd, short event, void * arg) {
 		return;
 	}	
 
-	clsPeerPoint* PeerObj = new clsPeerPoint(client_fd);
+	clsPeerPoint* PeerObj = new clsPeerPoint(client_fd, SERVER_TYPE);
 
-	Manager->AddServerVfdList(listenfd, client_fd);
-	Manager->AddServerPeerVfdList(client_fd, PeerObj, ServerSock);
+	Manager->AddPeerObj(client_fd, PeerObj);
+	Manager->AddPeerServerMap(client_fd, ServerSock);
 
-	Manager->PeerVfdOnConnect(client_fd);
-
-	/*
-	cout << "Get A New Connection,Vfd=" << client_fd << endl;
-	char* TmpBuf = "Hello World";
-	Manager->PeerVfdOnWrite(client_fd, TmpBuf, strlen(TmpBuf));
-	*/
+	PeerObj->OnConnect(client_fd);
 }
 
 void clsServerSocket::Start()
@@ -92,4 +86,6 @@ void clsServerSocket::Start()
 	struct event* ev_listen = (struct event*)malloc(sizeof(struct event));
 	event_set(ev_listen, _Vfd, EV_READ|EV_PERSIST, NewConnect, this);
 	event_add(ev_listen, NULL);
+
+	Manager->AddServerObj(_Vfd, this);
 }

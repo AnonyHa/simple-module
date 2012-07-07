@@ -23,19 +23,19 @@ class SocketManager {
 		map< int, clsClientSocket* > ClientObjList;
 		map< int, clsPeerPoint* > PeerObjList;
 		//核心的抽象对象 PeerVfd与ServerVfd,以及ClientVfd的映射
-		map< int, int> PeerVfd2ServerVfd;
-		map< int, int> PeerVfd2ClientVfd;
+		map< int, clsServerSocket*> PeerVfd2ServerObj;
+		map< int, clsClientSocket*> PeerVfd2ClientObj;
 
 
 		bool DelClientVfd(int ClientVfd);
 		bool DelServerVfd(int ServerVfd);
-		bool DelPeerVfd(int PeerVfd);
+		bool DelPeerVfd(int PeerVfd, int DelType);
 	public:
 		clsServerSocket* CreateServerSocket(int Port, PacketInterface* PacketClass = 0);		
 		clsClientSocket* CreateClientSocket(string Ip, int Port, PacketInterface* PacketClass = 0);
 
-		bool AddPeerServerVfdMap(int PeerVfd, int MapVfd);
-		bool AddPeerClientVfdMap(int PeerVfd, int MapVfd);
+		bool AddPeerServerMap(int PeerVfd, clsServerSocket* ServerObj);
+		bool AddPeerClientMap(int PeerVfd, clsClientSocket* ClientObj);
 		bool AddServerObj(int ServerVfd, clsServerSocket* ServerObj);
 		bool AddClientObj(int ClientVfd, clsClientSocket* ClientObj);
 		bool AddPeerObj(int PeerVfd, clsPeerPoint* PeerObj);
