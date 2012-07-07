@@ -16,6 +16,7 @@ class clsPeerPoint{
 		void OnRead(struct bufferevent * buf_ev, void * arg);
 		void OnError(struct bufferevent * buf_ev, short error_no, void * arg);
 		void OnConnect(int Vfd);
+		bool WriteData(char* Buf, int BufLen);
 		int GetVfd() {return _Vfd;};
 		int GetVfdType() {return _VfdType;};
 };

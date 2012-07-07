@@ -233,9 +233,11 @@ bool SocketManager::PeerVfdOnRead(int PeerVfd, char* Buf, int BufLen)
 
 bool SocketManager::PeerVfdOnWrite(int ToVfd, char* Buf, int BufLen)
 {
-	if (!PeerObjList.count(ToVfd)) return false;
-	write(ToVfd, Buf, BufLen);
-	return true;
+	clsPeerPoint * PeerObj = NULL;
+	GET_MAP_VALUE(PeerObjList, ToVfd, PeerObj);
+	if (!PeerObj) return 0;
+
+	return PeerObj->WriteData(Buf, BufLen);
 }
 
 bool SocketManager::PeerVfdOnConnect(int Vfd)
