@@ -39,11 +39,12 @@ void clsClientSocket::Connect()
 		throw SocketError(ClientFd, 3, GetAimInfo() + "Set NonBlock Failed");
 	}
 
-	clsPeerPoint* PeerObj = new clsPeerPoint(ClientFd);
+	clsPeerPoint* PeerObj = new clsPeerPoint(ClientFd, CLIENT_TYPE);
+	Manager->AddPeerObj(ClientFd, PeerObj);
+	Manager->AddPeerClientMap(ClientFd, this);
+	Manager->AddClientObj(ClientFd, this);
 
-	Manager->AddClientVfdList(ClientFd);	
-	Manager->AddClientPeerVfdList(ClientFd, PeerObj, this);
-	Manager->PeerVfdOnConnect(ClientFd);
+	PeerObj->OnConnect(ClientFd);
 }
 
 void clsClientSocket::Close()

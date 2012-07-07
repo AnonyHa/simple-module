@@ -17,13 +17,6 @@ clsServerSocket* SocketManager::CreateServerSocket(int Port, PacketInterface* Pa
 		return NULL;
 	}
 
-	int ServerVfd = ServerSock->GetVfd();
-	if (!AddServerObj(ServerVfd, ServerSock))
-	{
-		delete ServerSock;
-		throw SocketError(ServerVfd, 4, "ServerVfd has Obj");
-	}
-
 	cout << "Create Server At Port="<<Port<<endl;
 	return ServerSock;
 }
@@ -41,128 +34,95 @@ clsClientSocket* SocketManager::CreateClientSocket(string Ip, int Port, PacketIn
 		return NULL;
 	}
 
-	int ClientVfd = ClientSock->GetVfd();
-	if (!AddClientObj(ClientVfd, ClientSock))
-	{
-		delete ClientSock;
-		throw SocketError(ClientVfd, 4, "ClientVfd has Obj");
-		return NULL;
-	}
-
-	//这里要添加PeerVfd与ClientVfd的映射
-	AddPeerClientVfdMap(ClientVfd, ClientVfd);
-
 	cout << "Create Client conn Ok,Ip="<<Ip<<",Port="<<Port<<endl;
 	return ClientSock;
 }
 
-bool SocketManager::AddPeerServerVfdMap(int PeerVfd, int MapVfd)
+bool SocketManager::AddPeerServerMap(int PeerVfd, clsServerSocket* ServerObj)
 {
-	if (PeerVfd2ServerVfd.count(PeerVfd)) return false;
-	PeerVfd2ServerVfd[PeerVfd] = MapVfd;	
+	if (PeerVfd2ServerObj.count(PeerVfd)) return false;
+	PeerVfd2ServerObj[PeerVfd] = ServerObj;	
 	return true;
 }
 
-bool SocketManager:AddPeerClientVfdMap(int PeerVfd, int MapVfd)
+bool SocketManager::AddPeerClientMap(int PeerVfd, clsClientSocket* ClientObj)
 {
-	if (PeerVfd2ClientVfd.count(PeerVfd)) return false;
-	PeerVfd2ClientVfd[PeerVfd] = MapVfd;	
+	if (PeerVfd2ClientObj.count(PeerVfd)) return false;
+	PeerVfd2ClientObj[PeerVfd] = ClientObj;	
 	return true;
 }
 
-
-bool SocketManager:AddServerObj(int ServerVfd, clsServerSocket* ServerObj)
+bool SocketManager::AddServerObj(int ServerVfd, clsServerSocket* ServerObj)
 {
-	if (ServerObjList.count(ServerVfd)) return false;
-	ServerObjList[ServerVfd] = ServerObj;
-	return true;
+		if (ServerObjList.count(ServerVfd)) return false;
+		ServerObjList[ServerVfd] = ServerObj;
+		return true;
 }
 
-bool SocketManager:AddClientObj(int ClientVfd, clsClientSocket* ClientObj)
+bool SocketManager::AddClientObj(int ClientVfd, clsClientSocket* ClientObj)
 {
-	if (ClientObjList.count(ClientVfd)) return false;
-	ClientObjList[ClientVfd] = ClientObj;
-	return true;
+		if (ClientObjList.count(ClientVfd)) return false;
+		ClientObjList[ClientVfd] = ClientObj;
+		return true;
 }
 
-bool SocketManager:AddPeerObj(int PeerVfd, clsPeerPoint* PeerObj)
+bool SocketManager::AddPeerObj(int PeerVfd, clsPeerPoint* PeerObj)
 {
-	if (PeerObjList.count(PeerVfd)) return false;
-	PeerObjList[PeerVfd] = PeerObj;
-	return true;
+		if (PeerObjList.count(PeerVfd)) return false;
+		PeerObjList[PeerVfd] = PeerObj;
+		return true;
 }
 
 
 void SocketManager::ShowInfo()
 {
-	int TmpVfd;
-	cout <<"ServerVfd Info:"<<endl;
-	map< int, vector<int> >::iterator iter = ServerList.begin();
-	map< int, vector<int> >::iterator iter_end = ServerList.end();
-	while(iter != iter_end)
+		cout << "Server Vfd Info:"<<endl;
+	map< int, clsServerSocket*>::iterator IterServerObj = ServerObjList.begin();
+	map< int, clsServerSocket*>::iterator IterPeer2Ser = PeerVfd2ServerObj.begin();
+
+	while(IterServerObj!=ServerObjList.end())
 	{
-		cout << "ServerVfd="<<iter->first << ",PeerVfdList={";
-		vector<int>::iterator subiter = (iter->second).begin();
-		while(subiter!= (iter->second).end())
+		cout << IterServerObj->first<<"={";
+		clsServerSocket* ServerSock = IterServerObj->second;
+		IterPeer2Ser = PeerVfd2ServerObj.begin();
+		while(IterPeer2Ser!=PeerVfd2ServerObj.end())
 		{
-			cout << *subiter<<",";
-			TmpVfd = *subiter;
-			subiter++;
+			if (IterPeer2Ser->second == ServerSock)
+				cout << IterPeer2Ser->first<<",";
+			IterPeer2Ser++;
 		}
-		cout << "}" <<endl;
-		iter++;
+		IterServerObj++;
+		cout << "},"<<endl;
 	}
 
-
-	cout <<"ClientVfd Info:"<<endl<<"ClientVfd:";
-	vector<int>::iterator ClientIter = ClientList.begin();
-	while(ClientIter!= ClientList.end())
+	cout << "Client Vfd Info:"<<endl;
+	cout << "{";
+	map< int, clsClientSocket*>::iterator IterClientObj = ClientObjList.begin();
+	while(IterClientObj!=ClientObjList.end())
 	{
-		cout << *ClientIter;
-		ClientIter++;
+		cout << IterClientObj->first<<",";
+		IterClientObj++;
 	}
-	cout << endl;
-	cout <<"PeerVfd Info:"<<endl<<"PeerVfd:";
+	cout << "}"<<endl;
 
-	map< int, StructSock * >::iterator PeerIter = PeerList.begin();
-	while(PeerIter!=PeerList.end())
+	cout << "Peer Vfd Info:"<<endl;
+	cout << "{";
+	map< int,clsPeerPoint*>::iterator IterPeerObj = PeerObjList.begin();
+	while(IterPeerObj!=PeerObjList.end())
 	{
-		cout << PeerIter->first<<",";
-		PeerIter++;
+		cout << IterPeerObj->first;
+		IterPeerObj++;
 	}
-	cout << endl;
+	cout << "}"<<endl;
 }
 
 bool SocketManager::PeerVfdOnClose(int PeerVfd)
 {
-	if(!PeerList.count(PeerVfd))	
-	{
-		cerr<< "PeerVfd="<<PeerVfd<<"not exsit!"<<endl;
-		return false;
-	}
+	clsPeerPoint* PeerObj = NULL;
+	GET_MAP_VALUE(PeerObjList, PeerVfd, PeerObj);
+	if (!PeerObj) return false;
 
-	//先对ServerList和ClientList作操作
-	StructSock* p = PeerList[PeerVfd];
-	if(p->GetVfdType() == 1)
-	{
-		int ServerVfd = p->GetServerSocket()->GetServerVfd();
-		DelServerPeerVfd(ServerVfd, PeerVfd);
-	}
-	else if(p->GetVfdType() == 2)
-	{
-		DelClientVfd(PeerVfd);
-	}
-	else
-	{
-		cerr<<"PeerVfd="<<PeerVfd<<",Socket Vfd Type="<<p->GetVfdType()<<endl;
-		return false;
-	}	
-
-	//针对PeerVfd作操作
-	PeerList.erase(PeerVfd);
-	delete p;	
-
-	return true;
+	return DelPeerVfd(PeerObj->GetVfd(), PeerObj->GetVfdType());
 }
 
 bool SocketManager::DelPeerVfd(int PeerVfd, int DelType)
@@ -180,17 +140,17 @@ bool SocketManager::DelPeerVfd(int PeerVfd, int DelType)
 
 	if(DelType == SERVER_TYPE)
 	{
-		if (PeerVfd2ServerVfd.count(PeerVfd))
+		if (PeerVfd2ServerObj.count(PeerVfd))
 		{
-			PeerVfd2ServerVfd.erase(PeerVfd);
+			PeerVfd2ServerObj.erase(PeerVfd);
 			PeerVfdExsit = 1;
 		}
 	}
 	else
 	{
-		if (PeerVfd2ClientVfd.count(PeerVfd))
+		if (PeerVfd2ClientObj.count(PeerVfd))
 		{
-			PeerVfd2ClientVfd.erase(PeerVfd);
+			PeerVfd2ClientObj.erase(PeerVfd);
 			PeerVfdExsit = 1;
 			OpClient = DelClientVfd(PeerVfd);
 		}
@@ -203,17 +163,17 @@ bool SocketManager::DelPeerVfd(int PeerVfd, int DelType)
 //删除ServerVfd的时候，还需要断开所有的Vfd连接以及相应的资源
 bool SocketManager::DelServerVfd(int ServerVfd)
 {
-	//对PeerVfd2ServerVfd遍历，如果有ServerVfd的内容，则删除相应的PeerObj
-	map<int, int>::iterator Iter = PeerVfd2ServerVfd.begin();
+	//对PeerVfd2ServerObj遍历，如果有ServerVfd的内容，则删除相应的PeerObj
+	map<int, clsServerSocket*>::iterator Iter = PeerVfd2ServerObj.begin();
 	int PeerVfd;
-	while(Iter!=PeerVfd2ServerVfd.end())
+	while(Iter!=PeerVfd2ServerObj.end())
 	{
-		if (Iter->second == ServerVfd) 
+		if ((Iter->second)->GetVfd() == ServerVfd) 
 		{
 			PeerVfd = Iter->first;
 			close(PeerVfd);
 			DelPeerVfd(PeerVfd, SERVER_TYPE);
-			PeerVfd2ServerVfd.erase(Iter++);
+			PeerVfd2ServerObj.erase(Iter++);
 		}
 		else
 			Iter++;
@@ -223,7 +183,7 @@ bool SocketManager::DelServerVfd(int ServerVfd)
 	{
 		clsServerSocket* ServerObj = ServerObjList[ServerVfd];
 		delete ServerObj;
-		ServerObjList.erase(SeverVfd);
+		ServerObjList.erase(ServerVfd);
 	}
 
 	return true;
@@ -246,13 +206,11 @@ bool SocketManager::PeerVfdOnRead(int PeerVfd, char* Buf, int BufLen)
 {
 	if (! PeerObjList.count(PeerVfd)) return false;
 	clsPeerPoint * p = PeerObjList[PeerVfd];	
+
 	if(p->GetVfdType() == SERVER_TYPE)
 	{
-		int ServerVfd = -1; 
-		GET_MAP_VALUE(PeerVfd2ServerVfd, PeerVfd, ServerVfd);
-		if (ServerVfd == -1) return false;	
 		clsServerSocket* ServerSock = NULL;
-		GET_MAP_VALUE(ServerObjList, ServerVfd, ServerSock);
+		GET_MAP_VALUE(PeerVfd2ServerObj, PeerVfd, ServerSock);
 		if (!ServerSock) return false;
 
 		if (ServerSock->GetPacketInterface())	
@@ -262,7 +220,10 @@ bool SocketManager::PeerVfdOnRead(int PeerVfd, char* Buf, int BufLen)
 	}
 	else if(p->GetVfdType() == CLIENT_TYPE)
 	{
-		clsClientSocket* ClientSock = p->GetClientSocket();
+		clsClientSocket* ClientSock = NULL;
+		GET_MAP_VALUE(PeerVfd2ClientObj, PeerVfd, ClientSock);
+		if (!ClientSock) return false;
+
 		if (ClientSock->GetPacketInterface())
 		{
 			return ClientSock->GetPacketInterface()->PacketOnRead(PeerVfd, Buf, BufLen);
@@ -272,26 +233,33 @@ bool SocketManager::PeerVfdOnRead(int PeerVfd, char* Buf, int BufLen)
 
 bool SocketManager::PeerVfdOnWrite(int ToVfd, char* Buf, int BufLen)
 {
-	if(!PeerList[ToVfd]) return false;
+	if (!PeerObjList.count(ToVfd)) return false;
 	write(ToVfd, Buf, BufLen);
 	return true;
 }
 
 bool SocketManager::PeerVfdOnConnect(int Vfd)
 {
-	if(!PeerList[Vfd]) return false;
-	StructSock * p = PeerList[Vfd];	
-	if(p->GetVfdType() == 1)
+	clsPeerPoint* p = NULL;
+	GET_MAP_VALUE(PeerObjList, Vfd, p);
+	if (!p) return false;
+
+	if(p->GetVfdType() == SERVER_TYPE)
 	{
-		clsServerSocket* ServerSock = p->GetServerSocket();
+		clsServerSocket* ServerSock = NULL;
+		GET_MAP_VALUE(PeerVfd2ServerObj, Vfd, ServerSock);
+		if(!ServerSock) return false;
+
 		if (ServerSock->GetPacketInterface())	
 		{
 			return ServerSock->GetPacketInterface()->PacketOnConnect(Vfd);
 		}
 	}
-	else if(p->GetVfdType() == 2)
+	else if(p->GetVfdType() == CLIENT_TYPE)
 	{
-		clsClientSocket* ClientSock = p->GetClientSocket();
+		clsClientSocket* ClientSock = NULL;
+		GET_MAP_VALUE(PeerVfd2ClientObj, Vfd, ClientSock);
+		if(!ClientSock) return false;
 		if (ClientSock->GetPacketInterface())
 		{
 			return ClientSock->GetPacketInterface()->PacketOnConnect(Vfd);
