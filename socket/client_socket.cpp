@@ -19,7 +19,7 @@ extern SocketManager* Manager;
 void clsClientSocket::Connect()
 {
 	int ClientFd = socket(AF_INET, SOCK_STREAM, 0);
-	if(ClientFd < 0) {throw SocketError(-1, 2, GetAimInfo() + "Create File Describtion error!");};
+	if(ClientFd < 0) {throw SocketError(ClientFd, CLIENT_CREATE_ERR, GetAimInfo() + "Create File Describtion error!");};
 
 	struct sockaddr_in ClientAddr;
 	memset(&ClientAddr, 0, sizeof(ClientAddr));
@@ -29,14 +29,14 @@ void clsClientSocket::Connect()
 	cout << "try to Connect Ip:" << GetIp() << " Port:"<< GetPort() <<endl;
 
 	if(connect(ClientFd, (struct sockaddr *)&ClientAddr, sizeof(ClientAddr))<0) {
-		throw SocketError(ClientFd, 2, GetAimInfo() + " Connect Failed");
+		throw SocketError(ClientFd, CONN_ERR, GetAimInfo() + " Connect Failed");
 	}
 
 
 	int iFlags = fcntl(ClientFd, F_GETFL, 0);
 	if (iFlags == -1 || fcntl(ClientFd, F_SETFL, iFlags | O_NONBLOCK)) {
 		close(ClientFd);
-		throw SocketError(ClientFd, 3, GetAimInfo() + "Set NonBlock Failed");
+		throw SocketError(ClientFd, CLIENT_CREATE_ERR, GetAimInfo() + "Set NonBlock Failed");
 	}
 
 	clsPeerPoint* PeerObj = new clsPeerPoint(ClientFd, CLIENT_TYPE);

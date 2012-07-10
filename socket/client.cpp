@@ -18,11 +18,11 @@ int main(void)
 	
 	try{
 		SimplePacketFunc* SimpleFunc = new SimplePacketFunc();
-		clsClientSocket* Test = Manager->CreateClientSocket(string("192.168.84.128"), 6666, SimpleFunc);
+		clsClientSocket* Test = Manager->CreateClientSocket(string("192.168.10.48"), 6666, SimpleFunc);
 	}
 	catch(SocketError& e)
 	{
-		cout << "Vfd:" << e.GetVfd() << "\tErrMsg:" << e.GetMsg() << endl;
+		cout << "ErrMsg:" << e.GetMsg() << endl;
 	}
 
 	while(1)
