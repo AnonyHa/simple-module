@@ -12,7 +12,7 @@ clsServerSocket* SocketManager::CreateServerSocket(int Port, PacketInterface* Pa
 	}
 	catch(SocketError& e)
 	{
-		cout << "Create Server Error,Port="<<Port<<" "<<e.GetMsg()<<endl;
+		cout << e.GetMsg()<<endl;
 		delete ServerSock;
 		return NULL;
 	}
@@ -29,7 +29,7 @@ clsClientSocket* SocketManager::CreateClientSocket(string Ip, int Port, PacketIn
 	}
 	catch(SocketError& e)
 	{
-		cout << "Create Client Error,Ip="<<Ip <<"Port="<<Port<<",ErrMsg="<<e.GetMsg()<<endl;
+		cout << e.GetMsg() <<endl;
 		delete ClientSock;
 		return NULL;
 	}
@@ -76,7 +76,7 @@ bool SocketManager::AddPeerObj(int PeerVfd, clsPeerPoint* PeerObj)
 
 void SocketManager::ShowInfo()
 {
-		cout << "Server Vfd Info:"<<endl;
+	cout << "Server Vfd Info:"<<endl;
 	map< int, clsServerSocket*>::iterator IterServerObj = ServerObjList.begin();
 	map< int, clsServerSocket*>::iterator IterPeer2Ser = PeerVfd2ServerObj.begin();
 

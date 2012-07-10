@@ -28,7 +28,7 @@ void NewConnect(int listenfd, short event, void * arg) {
 	client_fd = accept(listenfd, (struct sockaddr *)&client_addr, &len_addr);
 	if (client_fd < 0)
 	{
-		throw SocketError(listenfd, 7, "Accept Failed,Can not Create Client Vfd");
+		throw SocketError(listenfd, SERVER_CREATE_PEER_ERR, "Accept Failed,Can not Create Client Vfd");
 		return;
 	}
 
@@ -36,7 +36,7 @@ void NewConnect(int listenfd, short event, void * arg) {
 	if (iFlags == -1 || fcntl(client_fd, F_SETFL, iFlags | O_NONBLOCK)) {
 		//如果设置文件描述符失败，则直接关掉相应的vfd
 		close(client_fd);
-		throw SocketError(client_fd, 4, "Set Non Block Failed");
+		throw SocketError(client_fd, SERVER_CREATE_PEER_ERR, "Set Non Block Failed");
 		return;
 	}	
 
@@ -52,7 +52,7 @@ void clsServerSocket::Start()
 {
 	int socketfd = socket(AF_INET, SOCK_STREAM, 0);
 	if(socketfd < 0 ){
-		throw SocketError(-1, 1, string("Create Server Vfd Failed"));
+		throw SocketError(socketfd, SERVER_CREATE_ERR, "Create Server Vfd Failed");
 	}
 
 	struct sockaddr_in serveraddr;
@@ -63,23 +63,23 @@ void clsServerSocket::Start()
 	int optval = 1;
 	if(setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1){
 		close(socketfd);
-		throw SocketError(socketfd, 2, string("Set ReUseAddr Failed"));
+		throw SocketError(socketfd, SERVER_CREATE_ERR, "Set ReUseAddr Failed");
 	}
 
 	if(bind(socketfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0){
 		close(socketfd);
-		throw SocketError(socketfd, 3, string("Bind Failed"));
+		throw SocketError(socketfd, SERVER_CREATE_ERR, "Bind Failed");
 	}
 
 	if(listen(socketfd, _MaxNumber) != 0){
 		close(socketfd);
-		throw SocketError(socketfd, 4, string("Listen Failed"));
+		throw SocketError(socketfd, SERVER_CREATE_ERR, "Listen Failed");
 	}
 
 	int iFlags = fcntl(socketfd, F_GETFL, 0);
 	if (iFlags == -1 || fcntl(socketfd, F_SETFL, iFlags | O_NONBLOCK)) {
 		close(socketfd);
-		throw SocketError(socketfd, 5, string("Set Non Block Failed"));
+		throw SocketError(socketfd, SERVER_CREATE_ERR, "Set Non Block Failed");
 	}
 	
 	_Vfd = socketfd;
